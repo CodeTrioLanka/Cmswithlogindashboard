@@ -1,0 +1,153 @@
+import { useState } from 'react';
+import { Login } from '@/app/components/Login';
+import { Dashboard } from '@/app/components/Dashboard';
+
+export interface HomePageData {
+  title: string;
+  subtitle: string;
+  year_of_exp: number;
+  expert_Team_members: number;
+  total_tours: number;
+  happy_travelers: number;
+  gallery: string[];
+  homebg: string;
+  destinationImage: string;
+  personalizedImage: string;
+}
+
+export interface AboutUsData {
+  title: string;
+  description: string;
+  mission: string;
+  vision: string;
+  image: string;
+}
+
+export interface TourData {
+  title: string;
+  description: string;
+  duration: string;
+  price: string;
+  image: string;
+}
+
+export interface ExcursionData {
+  title: string;
+  description: string;
+  location: string;
+  price: string;
+  image: string;
+}
+
+export interface ThingsToDoData {
+  title: string;
+  description: string;
+  category: string;
+  image: string;
+}
+
+export interface ServiceData {
+  title: string;
+  description: string;
+  icon: string;
+}
+
+export interface ReviewData {
+  name: string;
+  rating: number;
+  comment: string;
+  date: string;
+}
+
+export interface ContactData {
+  email: string;
+  phone: string;
+  address: string;
+  mapUrl: string;
+  socialMedia: {
+    facebook: string;
+    instagram: string;
+    twitter: string;
+  };
+}
+
+export interface CMSData {
+  home: HomePageData;
+  aboutUs: AboutUsData;
+  tours: TourData[];
+  excursions: ExcursionData[];
+  thingsToDo: ThingsToDoData[];
+  services: ServiceData[];
+  reviews: ReviewData[];
+  contact: ContactData;
+}
+
+export default function App() {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [cmsData, setCmsData] = useState<CMSData>({
+    home: {
+      title: 'Discover Your Next Adventure',
+      subtitle: 'Explore the world with our expert travel guides',
+      year_of_exp: 15,
+      expert_Team_members: 50,
+      total_tours: 1200,
+      happy_travelers: 25000,
+      gallery: [],
+      homebg: '',
+      destinationImage: '',
+      personalizedImage: ''
+    },
+    aboutUs: {
+      title: 'About Our Company',
+      description: 'We are a leading travel company with years of experience',
+      mission: 'To provide unforgettable travel experiences',
+      vision: 'To be the world\'s most trusted travel partner',
+      image: ''
+    },
+    tours: [],
+    excursions: [],
+    thingsToDo: [],
+    services: [],
+    reviews: [],
+    contact: {
+      email: 'info@example.com',
+      phone: '+1 234 567 890',
+      address: '123 Travel Street, City, Country',
+      mapUrl: '',
+      socialMedia: {
+        facebook: '',
+        instagram: '',
+        twitter: ''
+      }
+    }
+  });
+
+  const handleLogin = (username: string, password: string) => {
+    // Simple mock login - in real app this would validate against backend
+    if (username && password) {
+      setIsLoggedIn(true);
+    }
+  };
+
+  const handleLogout = () => {
+    setIsLoggedIn(false);
+  };
+
+  const handleUpdateData = (data: CMSData) => {
+    setCmsData(data);
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {!isLoggedIn ? (
+        <Login onLogin={handleLogin} />
+      ) : (
+        <Dashboard 
+          cmsData={cmsData} 
+          onUpdate={handleUpdateData}
+          onLogout={handleLogout}
+        />
+      )}
+    </div>
+  );
+}
