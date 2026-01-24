@@ -1,6 +1,40 @@
 import { Home, Image, BarChart3 } from 'lucide-react';
+import { useRef, useState } from 'react';
 
 export function HomeSection() {
+  const [images, setImages] = useState({
+    background: 'https://example.com/home-bg.jpg',
+    homebg: 'https://example.com/home-bg.jpg',
+    destinationImage: 'https://example.com/destination.jpg',
+    personalizedImage: 'https://example.com/personalized.jpg',
+    gallery: ['https://example.com/gallery1.jpg', 'https://example.com/gallery2.jpg']
+  });
+
+  const createFileInput = (onFileSelect: (url: string) => void) => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.onchange = (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (file) {
+        const url = URL.createObjectURL(file);
+        onFileSelect(url);
+      }
+    };
+    input.click();
+  };
+
+  const addGalleryImage = () => {
+    setImages(prev => ({ ...prev, gallery: [...prev.gallery, ''] }));
+  };
+
+  const removeGalleryImage = (index: number) => {
+    setImages(prev => ({ ...prev, gallery: prev.gallery.filter((_, i) => i !== index) }));
+  };
+
+  const handleImageUpdate = (key: string, value: string) => {
+    setImages(prev => ({ ...prev, [key]: value }));
+  };
   const sampleData = {
     title: 'Welcome to Sri Lanka Tours',
     subtitle: 'Discover the beauty of Sri Lanka with our amazing tour packages',
@@ -41,8 +75,34 @@ export function HomeSection() {
               placeholder="Enter subtitle"
             />
           </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Background Image</label>
+            <div className="flex gap-2 mb-2">
+              <input
+                type="url"
+                value={images.background}
+                onChange={(e) => handleImageUpdate('background', e.target.value)}
+                className="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                placeholder="Background image URL"
+              />
+              <button 
+                type="button"
+                onClick={() => createFileInput((url) => handleImageUpdate('background', url))}
+                className="px-4 py-2.5 bg-gray-100 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-200 transition-all"
+              >
+                Browse
+              </button>
+            </div>
+            {images.background && (
+              <div className="mt-2">
+                <img src={images.background} alt="Background preview" className="w-32 h-auto rounded border" />
+              </div>
+            )}
+          </div>
         </div>
       </div>
+
+      
 
       {/* Statistics */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
@@ -96,33 +156,50 @@ export function HomeSection() {
           <Image className="w-5 h-5 text-green-600" />
           <h3 className="text-lg font-semibold text-gray-900">Featured Images</h3>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Home Background</label>
-            <input
-              type="url"
-              defaultValue={sampleData.homebg}
-              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-              placeholder="Image URL"
-            />
-          </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Destination Image</label>
-            <input
-              type="url"
-              defaultValue={sampleData.destinationImage}
-              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-              placeholder="Image URL"
-            />
+            <div className="flex gap-2 mb-2">
+              <input
+                type="url"
+                value={images.destinationImage}
+                onChange={(e) => handleImageUpdate('destinationImage', e.target.value)}
+                className="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                placeholder="Image URL"
+              />
+              <button 
+                type="button"
+                onClick={() => createFileInput((url) => handleImageUpdate('destinationImage', url))}
+                className="px-4 py-2.5 bg-gray-100 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-200 transition-all"
+              >
+                Browse
+              </button>
+            </div>
+            {images.destinationImage && (
+              <img src={images.destinationImage} alt="Destination preview" className="w-full h-auto rounded border" />
+            )}
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Personalized Image</label>
-            <input
-              type="url"
-              defaultValue={sampleData.personalizedImage}
-              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-              placeholder="Image URL"
-            />
+            <div className="flex gap-2 mb-2">
+              <input
+                type="url"
+                value={images.personalizedImage}
+                onChange={(e) => handleImageUpdate('personalizedImage', e.target.value)}
+                className="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                placeholder="Image URL"
+              />
+              <button 
+                type="button"
+                onClick={() => createFileInput((url) => handleImageUpdate('personalizedImage', url))}
+                className="px-4 py-2.5 bg-gray-100 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-200 transition-all"
+              >
+                Browse
+              </button>
+            </div>
+            {images.personalizedImage && (
+              <img src={images.personalizedImage} alt="Personalized preview" className="w-full h-auto rounded border" />
+            )}
           </div>
         </div>
       </div>
@@ -134,28 +211,51 @@ export function HomeSection() {
             <Image className="w-5 h-5 text-orange-600" />
             <h3 className="text-lg font-semibold text-gray-900">Gallery</h3>
           </div>
-          <button className="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-all text-sm font-medium">
+          <button 
+            onClick={addGalleryImage}
+            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-all text-sm font-medium"
+          >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
             </svg>
             Add Image
           </button>
         </div>
-        <div className="space-y-3">
-          {sampleData.gallery.map((url, index) => (
-            <div key={index} className="flex items-center gap-3">
-              <div className="flex-1">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {images.gallery.map((url, index) => (
+            <div key={index} className="border border-gray-200 rounded-lg p-4 space-y-3">
+              <div className="flex gap-2">
                 <input
                   type="url"
-                  defaultValue={url}
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                  placeholder={`Gallery image ${index + 1} URL`}
+                  value={url}
+                  onChange={(e) => {
+                    const newGallery = [...images.gallery];
+                    newGallery[index] = e.target.value;
+                    setImages(prev => ({ ...prev, gallery: newGallery }));
+                  }}
+                  className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder={`Image ${index + 1} URL`}
                 />
+                <button 
+                  type="button"
+                  onClick={() => createFileInput((newUrl) => {
+                    const newGallery = [...images.gallery];
+                    newGallery[index] = newUrl;
+                    setImages(prev => ({ ...prev, gallery: newGallery }));
+                  })}
+                  className="px-3 py-2 text-sm bg-gray-100 text-gray-700 border border-gray-300 rounded hover:bg-gray-200 transition-all"
+                >
+                  Browse
+                </button>
               </div>
-              <button className="p-2.5 text-red-600 hover:bg-red-50 rounded-lg transition-all" title="Remove image">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                </svg>
+              {url && (
+                <img src={url} alt={`Gallery ${index + 1}`} className="w-full h-auto rounded" />
+              )}
+              <button 
+                onClick={() => removeGalleryImage(index)}
+                className="w-full py-2 text-sm text-red-600 hover:bg-red-50 rounded transition-all"
+              >
+                Remove
               </button>
             </div>
           ))}
