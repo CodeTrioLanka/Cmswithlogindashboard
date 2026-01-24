@@ -1,24 +1,25 @@
 import { useState } from 'react';
 import { LogOut, Save, Home, Info, MapPin, Compass, Activity, Briefcase, Star, Mail, ChevronRight } from 'lucide-react';
-import type { CMSData } from '@/app/App';
-import { HomeSection } from '@/app/components/sections/HomeSection';
-import { AboutUsSection } from '@/app/components/sections/AboutUsSection';
-import { ToursSection } from '@/app/components/sections/ToursSection';
-import { ExcursionsSection } from '@/app/components/sections/ExcursionsSection';
-import { ThingsToDoSection } from '@/app/components/sections/ThingsToDoSection';
-import { ServicesSection } from '@/app/components/sections/ServicesSection';
-import { ReviewsSection } from '@/app/components/sections/ReviewsSection';
-import { ContactSection } from '@/app/components/sections/ContactSection';
+import type { CMSData } from '../App';
+import { HomeSection } from './sections/HomeSection';
+import { AboutUsSection } from './sections/AboutUsSection';
+import { ToursSection } from './sections/ToursSection';
+import { ExcursionsSection } from './sections/ExcursionsSection';
+import { ThingsToDoSection } from './sections/ThingsToDoSection';
+import { ServicesSection } from './sections/ServicesSection';
+import { ReviewsSection } from './sections/ReviewsSection';
+import { ContactSection } from './sections/ContactSection';
 
 interface DashboardProps {
   cmsData: CMSData;
   onUpdate: (data: CMSData) => void;
   onLogout: () => void;
+  user?: { id: string; email: string; role: string };
 }
 
 type Section = 'home' | 'about' | 'tours' | 'excursions' | 'things' | 'services' | 'reviews' | 'contact';
 
-export function Dashboard({ cmsData, onUpdate, onLogout }: DashboardProps) {
+export function Dashboard({ cmsData, onUpdate, onLogout, user }: DashboardProps) {
   const [activeSection, setActiveSection] = useState<Section>('home');
   const [formData, setFormData] = useState<CMSData>(cmsData);
   const [isSaved, setIsSaved] = useState(false);
@@ -110,6 +111,13 @@ export function Dashboard({ cmsData, onUpdate, onLogout }: DashboardProps) {
 
           {/* Logout */}
           <div className="p-4 border-t border-gray-200">
+            {user && (
+              <div className="mb-3 px-4 py-2 bg-gray-50 rounded-lg">
+                <p className="text-xs text-gray-500">Logged in as</p>
+                <p className="text-sm font-medium text-gray-700">{user.email}</p>
+                <p className="text-xs text-gray-500 capitalize">{user.role}</p>
+              </div>
+            )}
             <button
               onClick={onLogout}
               className="w-full flex items-center gap-3 px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg transition-all"

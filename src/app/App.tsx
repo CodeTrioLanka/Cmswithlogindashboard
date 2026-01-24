@@ -1,6 +1,6 @@
-import { useState } from 'react';
-import { Login } from '@/app/components/Login';
-import { Dashboard } from '@/app/components/Dashboard';
+import { useState, useEffect } from 'react';
+import { Login } from './components/Login';
+import { Dashboard } from './components/Dashboard';
 
 export interface HomePageData {
   title: string;
@@ -84,6 +84,7 @@ export interface CMSData {
 
 export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [user, setUser] = useState<{ id: string; email: string; role: string } | null>(null);
   const [cmsData, setCmsData] = useState<CMSData>({
     home: {
       title: 'Discover Your Next Adventure',
@@ -122,14 +123,27 @@ export default function App() {
     }
   });
 
-  const handleLogin = (username: string, password: string) => {
-    // Simple mock login - in real app this would validate against backend
-    if (username && password) {
-      setIsLoggedIn(true);
+  useEffect(() => {
+    const savedUser = localStorage.getItem('user');
+    if (savedUser) {
+      try {
+        const userData = JSON.parse(savedUser);
+        setUser(userData);
+        setIsLoggedIn(true);
+      } catch (error) {
+        localStorage.removeItem('user');
+      }
     }
+  }, []);
+
+  const handleLogin = (userData: { id: string; email: string; role: string }) => {
+    setUser(userData);
+    setIsLoggedIn(true);
   };
 
   const handleLogout = () => {
+    localStorage.removeItem('user');
+    setUser(null);
     setIsLoggedIn(false);
   };
 
@@ -146,6 +160,7 @@ export default function App() {
           cmsData={cmsData} 
           onUpdate={handleUpdateData}
           onLogout={handleLogout}
+          user={user || undefined}
         />
       )}
     </div>
