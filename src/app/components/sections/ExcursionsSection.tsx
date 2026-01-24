@@ -1,25 +1,10 @@
 import { Compass, Plus, Trash2 } from 'lucide-react';
-import type { ExcursionData } from '@/app/App';
 
-interface ExcursionsSectionProps {
-  data: ExcursionData[];
-  onChange: (data: ExcursionData[]) => void;
-}
-
-export function ExcursionsSection({ data, onChange }: ExcursionsSectionProps) {
-  const addExcursion = () => {
-    onChange([...data, { title: '', description: '', location: '', price: '', image: '' }]);
-  };
-
-  const removeExcursion = (index: number) => {
-    onChange(data.filter((_, i) => i !== index));
-  };
-
-  const updateExcursion = (index: number, field: keyof ExcursionData, value: string) => {
-    const newData = [...data];
-    newData[index] = { ...newData[index], [field]: value };
-    onChange(newData);
-  };
+export function ExcursionsSection() {
+  const sampleExcursions = [
+    { title: 'City Tour', description: 'Explore the beautiful city attractions', location: 'Colombo, Sri Lanka', price: '$50', image: 'https://example.com/city-tour.jpg' },
+    { title: 'Beach Adventure', description: 'Relax at pristine beaches', location: 'Galle, Sri Lanka', price: '$75', image: 'https://example.com/beach.jpg' }
+  ];
 
   return (
     <div className="space-y-6">
@@ -28,42 +13,21 @@ export function ExcursionsSection({ data, onChange }: ExcursionsSectionProps) {
           <h3 className="text-lg font-semibold text-gray-900">Excursions</h3>
           <p className="text-sm text-gray-600 mt-1">Manage day trips and excursion activities</p>
         </div>
-        <button
-          onClick={addExcursion}
-          className="inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:from-blue-600 hover:to-purple-700 transition-all shadow-md font-medium"
-        >
+        <button className="inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:from-blue-600 hover:to-purple-700 transition-all shadow-md font-medium">
           <Plus className="w-4 h-4" />
           Add Excursion
         </button>
       </div>
 
-      {data.length === 0 ? (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-12 text-center">
-          <Compass className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-          <h4 className="text-lg font-semibold text-gray-900 mb-2">No excursions yet</h4>
-          <p className="text-gray-600 mb-6">Add exciting day trips and activities</p>
-          <button
-            onClick={addExcursion}
-            className="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-all font-medium"
-          >
-            <Plus className="w-4 h-4" />
-            Add Your First Excursion
-          </button>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 gap-6">
-          {data.map((excursion, index) => (
+      <div className="grid grid-cols-1 gap-6">
+        {sampleExcursions.map((excursion, index) => (
             <div key={index} className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
               <div className="flex items-start justify-between mb-5">
                 <div className="flex items-center gap-2">
                   <Compass className="w-5 h-5 text-purple-600" />
                   <h4 className="font-semibold text-gray-900">Excursion #{index + 1}</h4>
                 </div>
-                <button
-                  onClick={() => removeExcursion(index)}
-                  className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-all"
-                  title="Remove excursion"
-                >
+                <button className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-all" title="Remove excursion">
                   <Trash2 className="w-4 h-4" />
                 </button>
               </div>
@@ -73,8 +37,7 @@ export function ExcursionsSection({ data, onChange }: ExcursionsSectionProps) {
                   <label className="block text-sm font-medium text-gray-700 mb-2">Excursion Title</label>
                   <input
                     type="text"
-                    value={excursion.title}
-                    onChange={(e) => updateExcursion(index, 'title', e.target.value)}
+                    defaultValue={excursion.title}
                     className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                     placeholder="Enter excursion title"
                   />
@@ -83,8 +46,7 @@ export function ExcursionsSection({ data, onChange }: ExcursionsSectionProps) {
                 <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
                   <textarea
-                    value={excursion.description}
-                    onChange={(e) => updateExcursion(index, 'description', e.target.value)}
+                    defaultValue={excursion.description}
                     rows={3}
                     className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-none"
                     placeholder="Enter excursion description"
@@ -95,8 +57,7 @@ export function ExcursionsSection({ data, onChange }: ExcursionsSectionProps) {
                   <label className="block text-sm font-medium text-gray-700 mb-2">Location</label>
                   <input
                     type="text"
-                    value={excursion.location}
-                    onChange={(e) => updateExcursion(index, 'location', e.target.value)}
+                    defaultValue={excursion.location}
                     className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                     placeholder="e.g., Colombo, Sri Lanka"
                   />
@@ -106,8 +67,7 @@ export function ExcursionsSection({ data, onChange }: ExcursionsSectionProps) {
                   <label className="block text-sm font-medium text-gray-700 mb-2">Price</label>
                   <input
                     type="text"
-                    value={excursion.price}
-                    onChange={(e) => updateExcursion(index, 'price', e.target.value)}
+                    defaultValue={excursion.price}
                     className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                     placeholder="e.g., $50"
                   />
@@ -117,8 +77,7 @@ export function ExcursionsSection({ data, onChange }: ExcursionsSectionProps) {
                   <label className="block text-sm font-medium text-gray-700 mb-2">Image URL</label>
                   <input
                     type="url"
-                    value={excursion.image}
-                    onChange={(e) => updateExcursion(index, 'image', e.target.value)}
+                    defaultValue={excursion.image}
                     className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                     placeholder="https://example.com/excursion-image.jpg"
                   />
@@ -127,7 +86,6 @@ export function ExcursionsSection({ data, onChange }: ExcursionsSectionProps) {
             </div>
           ))}
         </div>
-      )}
     </div>
   );
 }

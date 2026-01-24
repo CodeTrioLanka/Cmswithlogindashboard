@@ -1,22 +1,6 @@
 import { Mail, Phone, MapPin, Globe } from 'lucide-react';
-import type { ContactData } from '@/app/App';
 
-interface ContactSectionProps {
-  data: ContactData;
-  onChange: (data: ContactData) => void;
-}
-
-export function ContactSection({ data, onChange }: ContactSectionProps) {
-  const handleChange = (field: keyof ContactData, value: string) => {
-    onChange({ ...data, [field]: value });
-  };
-
-  const handleSocialMediaChange = (platform: keyof ContactData['socialMedia'], value: string) => {
-    onChange({
-      ...data,
-      socialMedia: { ...data.socialMedia, [platform]: value }
-    });
-  };
+export function ContactSection() {
 
   return (
     <div className="space-y-6">
@@ -37,8 +21,7 @@ export function ContactSection({ data, onChange }: ContactSectionProps) {
             </label>
             <input
               type="email"
-              value={data.email}
-              onChange={(e) => handleChange('email', e.target.value)}
+              defaultValue="info@example.com"
               className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
               placeholder="info@example.com"
             />
@@ -53,8 +36,7 @@ export function ContactSection({ data, onChange }: ContactSectionProps) {
             </label>
             <input
               type="tel"
-              value={data.phone}
-              onChange={(e) => handleChange('phone', e.target.value)}
+              defaultValue="+1 234 567 890"
               className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
               placeholder="+1 234 567 890"
             />
@@ -68,8 +50,7 @@ export function ContactSection({ data, onChange }: ContactSectionProps) {
               </div>
             </label>
             <textarea
-              value={data.address}
-              onChange={(e) => handleChange('address', e.target.value)}
+              defaultValue="123 Street Name, City, Country"
               rows={3}
               className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-none"
               placeholder="123 Street Name, City, Country"
@@ -85,8 +66,7 @@ export function ContactSection({ data, onChange }: ContactSectionProps) {
             </label>
             <input
               type="url"
-              value={data.mapUrl}
-              onChange={(e) => handleChange('mapUrl', e.target.value)}
+              defaultValue="https://maps.google.com/..."
               className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
               placeholder="https://maps.google.com/..."
             />
@@ -106,8 +86,7 @@ export function ContactSection({ data, onChange }: ContactSectionProps) {
             <label className="block text-sm font-medium text-gray-700 mb-2">Facebook URL</label>
             <input
               type="url"
-              value={data.socialMedia.facebook}
-              onChange={(e) => handleSocialMediaChange('facebook', e.target.value)}
+              defaultValue="https://facebook.com/yourpage"
               className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
               placeholder="https://facebook.com/yourpage"
             />
@@ -117,8 +96,7 @@ export function ContactSection({ data, onChange }: ContactSectionProps) {
             <label className="block text-sm font-medium text-gray-700 mb-2">Instagram URL</label>
             <input
               type="url"
-              value={data.socialMedia.instagram}
-              onChange={(e) => handleSocialMediaChange('instagram', e.target.value)}
+              defaultValue="https://instagram.com/yourprofile"
               className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
               placeholder="https://instagram.com/yourprofile"
             />
@@ -128,8 +106,7 @@ export function ContactSection({ data, onChange }: ContactSectionProps) {
             <label className="block text-sm font-medium text-gray-700 mb-2">Twitter URL</label>
             <input
               type="url"
-              value={data.socialMedia.twitter}
-              onChange={(e) => handleSocialMediaChange('twitter', e.target.value)}
+              defaultValue="https://twitter.com/yourhandle"
               className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
               placeholder="https://twitter.com/yourhandle"
             />
