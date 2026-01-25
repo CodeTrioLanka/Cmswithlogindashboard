@@ -143,13 +143,13 @@ export function Dashboard({ cmsData, onUpdate, onLogout, user }: DashboardProps)
                   Manage your {menuItems.find(item => item.id === activeSection)?.label.toLowerCase()} content
                 </p>
               </div>
-              <button
+              {/* <button
                 onClick={handleSave}
                 className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:from-blue-600 hover:to-purple-700 transition-all shadow-md hover:shadow-lg font-medium"
               >
                 <Save className="w-4 h-4" />
                 Save Changes
-              </button>
+              </button> */}
             </div>
           </div>
         </header>
