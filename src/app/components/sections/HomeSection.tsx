@@ -1,6 +1,8 @@
 import { Home, Image, BarChart3 } from 'lucide-react';
 import { useRef, useState } from 'react';
 
+
+
 export function HomeSection() {
   const [images, setImages] = useState({
     background: 'https://example.com/home-bg.jpg',

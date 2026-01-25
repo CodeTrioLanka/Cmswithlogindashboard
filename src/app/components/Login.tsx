@@ -4,6 +4,7 @@ import { Lock, Mail } from "lucide-react";
 // import { useRouter } from "next/navigation";
 
 const BASE_URL = 'http://localhost:5000';
+// dynamic by senuda adihetty
 
 interface User {
   id: string;
