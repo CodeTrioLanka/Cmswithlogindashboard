@@ -3,9 +3,7 @@ import { Lock, Mail } from "lucide-react";
 // If you want redirect after login, uncomment below (Next.js)
 // import { useRouter } from "next/navigation";
 
-/// <reference types="vite/client" />
-
-const BASE_URL = import.meta.env.VITE_BASE_URL || 'https://nature-escape-web-back.vercel.app';
+const BASE_URL = 'http://localhost:5000';
 // dynamic by senuda adihetty
 
 interface User {

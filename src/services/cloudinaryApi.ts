@@ -20,15 +20,15 @@ export const uploadToCloudinary = async (file: File): Promise<string> => {
 
     const data = await response.json();
     console.log('Upload response:', data);
-    
+
     // Handle different response formats
     const imageUrl = data.url || data.secure_url || data.imageUrl || data.cloudinaryUrl;
-    
+
     if (!imageUrl) {
       console.error('No URL found in response:', data);
       throw new Error('No image URL returned from server');
     }
-    
+
     return imageUrl;
   } catch (error) {
     console.error('Error uploading to Cloudinary:', error);
