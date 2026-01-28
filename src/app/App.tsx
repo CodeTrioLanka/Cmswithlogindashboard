@@ -47,6 +47,7 @@ export interface ThingsToDoData {
 }
 
 export interface ServiceData {
+  _id?: string;
   title: string;
   description: string;
   icon: string;
@@ -156,8 +157,8 @@ export default function App() {
       {!isLoggedIn ? (
         <Login onLogin={handleLogin} />
       ) : (
-        <Dashboard 
-          cmsData={cmsData} 
+        <Dashboard
+          cmsData={cmsData}
           onUpdate={handleUpdateData}
           onLogout={handleLogout}
           user={user || undefined}
