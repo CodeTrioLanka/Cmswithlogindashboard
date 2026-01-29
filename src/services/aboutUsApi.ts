@@ -2,6 +2,12 @@
 
 const BASE_URL = import.meta.env.VITE_BASE_URL || 'https://nature-escape-web-back.vercel.app';
 
+export interface Hero {
+    heroBackground: string;
+    heroTitle: string;
+    heroDescription: string;
+}
+
 export interface AboutUsStats {
     yearExperience: number;
     happyTravelers: number;
@@ -31,6 +37,7 @@ export interface TeamMember {
 
 export interface AboutUsData {
     _id?: string;
+    hero: Hero;
     stats: AboutUsStats;
     milestones: Milestone[];
     values: Value[];
@@ -41,7 +48,7 @@ export interface AboutUsData {
 
 export const fetchAboutUsData = async (): Promise<AboutUsData | null> => {
     try {
-        const response = await fetch(`${BASE_URL}/api/aboutus`);
+        const response = await fetch(`${BASE_URL}/api/aboutus/getData`);
 
         // Handle 404 or other non-OK responses gracefully
         if (!response.ok) {
@@ -54,7 +61,8 @@ export const fetchAboutUsData = async (): Promise<AboutUsData | null> => {
 
         const data = await response.json();
         if (data.success && data.data && data.data.length > 0) {
-            return data.data[0];
+            // Return the latest record (last in array)
+            return data.data[data.data.length - 1];
         }
         return null;
     } catch (error) {
@@ -69,7 +77,7 @@ export const fetchAboutUsData = async (): Promise<AboutUsData | null> => {
 
 export const createAboutUsData = async (formData: FormData): Promise<AboutUsData> => {
     try {
-        const response = await fetch(`${BASE_URL}/api/aboutus`, {
+        const response = await fetch(`${BASE_URL}/api/aboutus/setData`, {
             method: 'POST',
             body: formData
         });
