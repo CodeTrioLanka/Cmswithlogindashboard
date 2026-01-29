@@ -22,7 +22,7 @@ const fetchServices = async (): Promise<ServiceData[]> => {
   }
 };
 
-const createService = async (service: ServiceData): Promise<ServiceData> => {
+const addService = async (service: ServiceData): Promise<ServiceData> => {
   try {
     const response = await fetch(`${BASE_URL}/api/service`, {
       method: 'POST',
@@ -115,7 +115,7 @@ export function ServicesSection({ data: _initialData, onChange: _onChange }: Ser
     if (newService.title && newService.description) {
       try {
         setIsLoading(true);
-        await createService(newService);
+        await addService(newService);
         setNewService({ title: '', description: '', image: '' });
         setIsDialogOpen(false);
         await loadServices();

@@ -40,9 +40,9 @@ export interface ExcursionData {
 }
 
 export interface ThingsToDoData {
+  _id?: string;
   title: string;
   description: string;
-  category: string;
   image: string;
 }
 
