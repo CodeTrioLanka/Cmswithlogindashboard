@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Info, TrendingUp, Calendar, Heart, Users, Plus, Trash2, Save, Loader2, AlertCircle } from 'lucide-react';
+import { Info, TrendingUp, Calendar, Heart, Users, Plus, Trash2, Save, Loader2, AlertCircle, Image } from 'lucide-react';
 import {
   fetchAboutUsData,
   createAboutUsData,
@@ -19,6 +19,12 @@ export function AboutUsSection() {
   const [success, setSuccess] = useState<string | null>(null);
 
   // Form state
+  const [hero, setHero] = useState({
+    heroBackground: '',
+    heroTitle: '',
+    heroDescription: ''
+  });
+  const [heroBackgroundFile, setHeroBackgroundFile] = useState<File | null>(null);
   const [stats, setStats] = useState<AboutUsStats>({
     yearExperience: 0,
     happyTravelers: 0,
@@ -41,6 +47,7 @@ export function AboutUsSection() {
       const data = await fetchAboutUsData();
       if (data) {
         setAboutUsData(data);
+        setHero(data.hero || { heroBackground: '', heroTitle: '', heroDescription: '' });
         setStats(data.stats);
         setMilestones(data.milestones || []);
         setValues(data.values || []);
@@ -62,6 +69,15 @@ export function AboutUsSection() {
       setSuccess(null);
 
       const formData = new FormData();
+
+      // Add hero data
+      formData.append('hero[heroTitle]', hero.heroTitle);
+      formData.append('hero[heroDescription]', hero.heroDescription);
+      if (heroBackgroundFile) {
+        formData.append('hero[heroBackground]', heroBackgroundFile);
+      } else if (hero.heroBackground) {
+        formData.append('hero[heroBackground]', hero.heroBackground);
+      }
 
       // Add stats
       formData.append('stats[yearExperience]', stats.yearExperience.toString());
@@ -102,14 +118,20 @@ export function AboutUsSection() {
       });
 
       let result;
+      let isUpdate = false;
+
       if (aboutUsData?._id) {
+        // Update existing data
+        isUpdate = true;
         result = await updateAboutUsData(aboutUsData._id, formData);
       } else {
+        // Create new data
         result = await createAboutUsData(formData);
       }
 
       setAboutUsData(result);
-      setSuccess('About Us data saved successfully!');
+      setSuccess(isUpdate ? 'About Us data updated successfully!' : 'About Us data created successfully!');
+      setHeroBackgroundFile(null);
       setTeamImages({});
 
       setTimeout(() => setSuccess(null), 3000);
@@ -224,6 +246,56 @@ export function AboutUsSection() {
       )}
 
       <div className="space-y-8">
+        {/* Hero Section */}
+        <div className="border-b pb-6">
+          <div className="flex items-center gap-2 mb-4">
+            <Image className="w-5 h-5 text-blue-600" />
+            <h4 className="text-md font-semibold text-gray-900">Hero Section</h4>
+          </div>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Hero Title</label>
+              <input
+                type="text"
+                value={hero.heroTitle}
+                onChange={(e) => setHero({ ...hero, heroTitle: e.target.value })}
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                placeholder="We Create Unforgettable Journeys"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Hero Description</label>
+              <textarea
+                value={hero.heroDescription}
+                onChange={(e) => setHero({ ...hero, heroDescription: e.target.value })}
+                rows={3}
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-none"
+                placeholder="Discover the world with us and create memories that last a lifetime..."
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Hero Background Image</label>
+              <div className="space-y-2">
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => setHeroBackgroundFile(e.target.files?.[0] || null)}
+                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                />
+                {(heroBackgroundFile || hero.heroBackground) && (
+                  <div className="relative w-full h-48 rounded-lg overflow-hidden border border-gray-300">
+                    <img
+                      src={heroBackgroundFile ? URL.createObjectURL(heroBackgroundFile) : hero.heroBackground}
+                      alt="Hero background preview"
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* Stats Section */}
         <div className="border-b pb-6">
           <div className="flex items-center gap-2 mb-4">
