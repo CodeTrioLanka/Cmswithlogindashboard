@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { FolderTree, Plus, Trash2, Edit, Save, X, Image as ImageIcon, Upload } from 'lucide-react';
 import { tourCategoriesService, type TourCategory } from '../../../services/tourCategories.service';
 import { uploadToCloudinary } from '../../../services/cloudinaryApi';
+import { deleteFromCloudinary } from '../../../services/deleteApi';
 import { toast } from 'sonner';
 
 export function TourCategoriesSection() {
@@ -31,6 +32,7 @@ export function TourCategoriesSection() {
         try {
             setIsLoading(true);
             const { tours } = await tourCategoriesService.getTourCategories();
+            console.log('Loaded categories:', tours);
             setCategories(tours);
         } catch (error) {
             console.error('Failed to load tour categories:', error);
@@ -68,6 +70,7 @@ export function TourCategoriesSection() {
     };
 
     const handleEdit = (category: TourCategory) => {
+        console.log('Editing category:', category);
         setEditingId(category._id!);
         setFormData(category);
         setImagePreviews(category.images);
@@ -94,12 +97,17 @@ export function TourCategoriesSection() {
                     toast.error('Please upload exactly 2 images');
                     return;
                 }
+                console.log('Creating tour category with data:', formData);
                 // Images are already Cloudinary URLs in formData
                 const response = await tourCategoriesService.createTourCategory(formData as Omit<TourCategory, '_id'>, []);
+                console.log('Create response:', response);
                 toast.success(response.message || 'Tour category created successfully!');
             } else if (editingId) {
+                console.log('Updating tour category with data:', formData);
+                console.log('Editing ID:', editingId);
                 // Images are already Cloudinary URLs in formData
                 const response = await tourCategoriesService.updateTourCategory(editingId, formData, []);
+                console.log('Update response:', response);
                 toast.success(response.message || 'Tour category updated successfully!');
             }
 
@@ -138,7 +146,7 @@ export function TourCategoriesSection() {
                 {!isAdding && (
                     <button
                         onClick={handleAdd}
-                        className="inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:from-blue-600 hover:to-purple-700 transition-all shadow-md font-medium"
+                        className="inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-green-700 to-emerald-600 text-white rounded-lg hover:from-green-800 hover:to-emerald-700 transition-all shadow-md font-medium"
                     >
                         <Plus className="w-4 h-4" />
                         Add Category
@@ -151,7 +159,7 @@ export function TourCategoriesSection() {
                 <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
                     <div className="flex items-center justify-between mb-5">
                         <div className="flex items-center gap-2">
-                            <FolderTree className="w-5 h-5 text-blue-600" />
+                            <FolderTree className="w-5 h-5 text-green-600" />
                             <h4 className="font-semibold text-gray-900">New Category</h4>
                         </div>
                         <div className="flex gap-2">
@@ -179,7 +187,7 @@ export function TourCategoriesSection() {
                                 type="text"
                                 value={formData.title || ''}
                                 onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                                 placeholder="e.g., BEACH TOURS"
                             />
                         </div>
@@ -190,7 +198,7 @@ export function TourCategoriesSection() {
                                 type="text"
                                 value={formData.slug || ''}
                                 onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
-                                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                                 placeholder="e.g., beach"
                             />
                         </div>
@@ -201,7 +209,7 @@ export function TourCategoriesSection() {
                                 value={formData.description || ''}
                                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                                 rows={3}
-                                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none"
                                 placeholder="Category description"
                             />
                         </div>
@@ -212,7 +220,7 @@ export function TourCategoriesSection() {
                                 type="number"
                                 value={formData.displayOrder || 0}
                                 onChange={(e) => setFormData({ ...formData, displayOrder: parseInt(e.target.value) })}
-                                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                             />
                         </div>
 
@@ -222,7 +230,7 @@ export function TourCategoriesSection() {
                                     type="checkbox"
                                     checked={formData.isActive}
                                     onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
-                                    className="w-4 h-4 text-blue-600 rounded"
+                                    className="w-4 h-4 text-green-600 rounded"
                                 />
                                 <span className="text-sm font-medium text-gray-700">Active</span>
                             </label>
@@ -259,8 +267,16 @@ export function TourCategoriesSection() {
                                                         setUploading(prev => ({ ...prev, 0: true }));
 
                                                         try {
+                                                            // Store old image URL for deletion
+                                                            const oldImageUrl = formData.images?.[0];
+
                                                             // Upload to Cloudinary
                                                             const url = await uploadToCloudinary(file);
+
+                                                            // Delete old image if it exists and is from Cloudinary
+                                                            if (oldImageUrl && oldImageUrl !== url && oldImageUrl.includes('cloudinary')) {
+                                                                await deleteFromCloudinary(oldImageUrl);
+                                                            }
 
                                                             // Update form data with Cloudinary URL (using functional setState)
                                                             setFormData(prev => {
@@ -332,8 +348,16 @@ export function TourCategoriesSection() {
                                                         setUploading(prev => ({ ...prev, 1: true }));
 
                                                         try {
+                                                            // Store old image URL for deletion
+                                                            const oldImageUrl = formData.images?.[1];
+
                                                             // Upload to Cloudinary
                                                             const url = await uploadToCloudinary(file);
+
+                                                            // Delete old image if it exists and is from Cloudinary
+                                                            if (oldImageUrl && oldImageUrl !== url && oldImageUrl.includes('cloudinary')) {
+                                                                await deleteFromCloudinary(oldImageUrl);
+                                                            }
 
                                                             // Update form data with Cloudinary URL (using functional setState)
                                                             setFormData(prev => {
@@ -416,8 +440,190 @@ export function TourCategoriesSection() {
                                         <textarea value={formData.description || ''} onChange={(e) => setFormData({ ...formData, description: e.target.value })} rows={2} className="w-full px-4 py-2.5 border border-gray-300 rounded-lg" />
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">Update Images (optional)</label>
-                                        <input type="file" accept="image/*" multiple onChange={handleImageChange} className="w-full px-4 py-2.5 border border-gray-300 rounded-lg" />
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">Display Order</label>
+                                        <input
+                                            type="number"
+                                            value={formData.displayOrder || 0}
+                                            onChange={(e) => setFormData({ ...formData, displayOrder: parseInt(e.target.value) })}
+                                            className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                                        />
+                                    </div>
+
+                                    <div className="flex items-center">
+                                        <label className="flex items-center gap-2 cursor-pointer">
+                                            <input
+                                                type="checkbox"
+                                                checked={formData.isActive}
+                                                onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
+                                                className="w-4 h-4 text-green-600 rounded"
+                                            />
+                                            <span className="text-sm font-medium text-gray-700">Active</span>
+                                        </label>
+                                    </div>
+
+                                    <div className="md:col-span-2">
+                                        <label className="block text-sm font-medium text-gray-700 mb-3">Images (2 required) *</label>
+                                        <div className="grid grid-cols-2 gap-4">
+                                            {/* Image 1 */}
+                                            <div>
+                                                <label className="block text-xs font-medium text-gray-600 mb-2">Image 1</label>
+                                                <div className="flex gap-2">
+                                                    <input
+                                                        type="url"
+                                                        value={formData.images?.[0] || ''}
+                                                        onChange={(e) => {
+                                                            const newImages = [...(formData.images || ['', ''])];
+                                                            newImages[0] = e.target.value;
+                                                            setFormData({ ...formData, images: newImages });
+                                                            setImagePreviews(prev => {
+                                                                const currentPreviews = prev || ['', ''];
+                                                                return [e.target.value, currentPreviews[1] || ''];
+                                                            });
+                                                        }}
+                                                        className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                                                        placeholder="Image URL"
+                                                    />
+                                                    <button
+                                                        type="button"
+                                                        onClick={async () => {
+                                                            const input = document.createElement('input');
+                                                            input.type = 'file';
+                                                            input.accept = 'image/*';
+                                                            input.onchange = async (e) => {
+                                                                const file = (e.target as HTMLInputElement).files?.[0];
+                                                                if (file) {
+                                                                    setUploading(prev => ({ ...prev, 0: true }));
+                                                                    try {
+                                                                        // Store old image URL for deletion
+                                                                        const oldImageUrl = formData.images?.[0];
+
+                                                                        const url = await uploadToCloudinary(file);
+
+                                                                        // Delete old image if it exists and is from Cloudinary
+                                                                        if (oldImageUrl && oldImageUrl !== url && oldImageUrl.includes('cloudinary')) {
+                                                                            await deleteFromCloudinary(oldImageUrl);
+                                                                        }
+
+                                                                        setFormData(prev => {
+                                                                            const currentImages = prev.images || ['', ''];
+                                                                            return { ...prev, images: [url, currentImages[1] || ''] };
+                                                                        });
+                                                                        setImagePreviews(prev => {
+                                                                            const currentPreviews = prev || ['', ''];
+                                                                            return [url, currentPreviews[1] || ''];
+                                                                        });
+                                                                        toast.success('Image 1 uploaded successfully!');
+                                                                    } catch (error) {
+                                                                        console.error('Upload failed:', error);
+                                                                        toast.error('Failed to upload image. Please try again.');
+                                                                    } finally {
+                                                                        setUploading(prev => ({ ...prev, 0: false }));
+                                                                    }
+                                                                }
+                                                            };
+                                                            input.click();
+                                                        }}
+                                                        disabled={uploading[0]}
+                                                        className="px-3 py-2 bg-gray-100 border border-gray-300 rounded-lg text-sm hover:bg-gray-200 flex items-center gap-1 disabled:opacity-50"
+                                                    >
+                                                        {uploading[0] ? (
+                                                            <>
+                                                                <div className="w-3 h-3 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" />
+                                                                <span>Uploading...</span>
+                                                            </>
+                                                        ) : (
+                                                            <>
+                                                                <Upload className="w-3 h-3" />
+                                                                Browse
+                                                            </>
+                                                        )}
+                                                    </button>
+                                                </div>
+                                                {imagePreviews[0] && (
+                                                    <img src={imagePreviews[0]} alt="Preview 1" className="mt-2 w-full h-32 object-cover rounded-lg border" />
+                                                )}
+                                            </div>
+
+                                            {/* Image 2 */}
+                                            <div>
+                                                <label className="block text-xs font-medium text-gray-600 mb-2">Image 2</label>
+                                                <div className="flex gap-2">
+                                                    <input
+                                                        type="url"
+                                                        value={formData.images?.[1] || ''}
+                                                        onChange={(e) => {
+                                                            const newImages = [...(formData.images || ['', ''])];
+                                                            newImages[1] = e.target.value;
+                                                            setFormData({ ...formData, images: newImages });
+                                                            setImagePreviews(prev => {
+                                                                const currentPreviews = prev || ['', ''];
+                                                                return [currentPreviews[0] || '', e.target.value];
+                                                            });
+                                                        }}
+                                                        className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                                                        placeholder="Image URL"
+                                                    />
+                                                    <button
+                                                        type="button"
+                                                        onClick={async () => {
+                                                            const input = document.createElement('input');
+                                                            input.type = 'file';
+                                                            input.accept = 'image/*';
+                                                            input.onchange = async (e) => {
+                                                                const file = (e.target as HTMLInputElement).files?.[0];
+                                                                if (file) {
+                                                                    setUploading(prev => ({ ...prev, 1: true }));
+                                                                    try {
+                                                                        // Store old image URL for deletion
+                                                                        const oldImageUrl = formData.images?.[1];
+
+                                                                        const url = await uploadToCloudinary(file);
+
+                                                                        // Delete old image if it exists and is from Cloudinary
+                                                                        if (oldImageUrl && oldImageUrl !== url && oldImageUrl.includes('cloudinary')) {
+                                                                            await deleteFromCloudinary(oldImageUrl);
+                                                                        }
+
+                                                                        setFormData(prev => {
+                                                                            const currentImages = prev.images || ['', ''];
+                                                                            return { ...prev, images: [currentImages[0] || '', url] };
+                                                                        });
+                                                                        setImagePreviews(prev => {
+                                                                            const currentPreviews = prev || ['', ''];
+                                                                            return [currentPreviews[0] || '', url];
+                                                                        });
+                                                                        toast.success('Image 2 uploaded successfully!');
+                                                                    } catch (error) {
+                                                                        console.error('Upload failed:', error);
+                                                                        toast.error('Failed to upload image. Please try again.');
+                                                                    } finally {
+                                                                        setUploading(prev => ({ ...prev, 1: false }));
+                                                                    }
+                                                                }
+                                                            };
+                                                            input.click();
+                                                        }}
+                                                        disabled={uploading[1]}
+                                                        className="px-3 py-2 bg-gray-100 border border-gray-300 rounded-lg text-sm hover:bg-gray-200 flex items-center gap-1 disabled:opacity-50"
+                                                    >
+                                                        {uploading[1] ? (
+                                                            <>
+                                                                <div className="w-3 h-3 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" />
+                                                                <span>Uploading...</span>
+                                                            </>
+                                                        ) : (
+                                                            <>
+                                                                <Upload className="w-3 h-3" />
+                                                                Browse
+                                                            </>
+                                                        )}
+                                                    </button>
+                                                </div>
+                                                {imagePreviews[1] && (
+                                                    <img src={imagePreviews[1]} alt="Preview 2" className="mt-2 w-full h-32 object-cover rounded-lg border" />
+                                                )}
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </>
@@ -441,7 +647,7 @@ export function TourCategoriesSection() {
                                         </div>
                                     </div>
                                     <div className="flex gap-2">
-                                        <button onClick={() => handleEdit(category)} className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg">
+                                        <button onClick={() => handleEdit(category)} className="p-2 text-green-600 hover:bg-green-50 rounded-lg">
                                             <Edit className="w-4 h-4" />
                                         </button>
                                         <button onClick={() => handleDelete(category._id!)} className="p-2 text-red-600 hover:bg-red-50 rounded-lg">

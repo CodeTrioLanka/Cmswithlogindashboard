@@ -1,3 +1,5 @@
+import { uploadToCloudinary } from './cloudinaryApi';
+
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 export interface Package {
@@ -7,7 +9,6 @@ export interface Package {
     tourCategory: string;
     hero: {
         title: string;
-        subtitle: string;
         description: string;
         backgroundImage: string;
     };
@@ -17,11 +18,6 @@ export interface Package {
             nights: number;
         };
         groupSize: string;
-        difficulty: 'Easy' | 'Moderate' | 'Challenging' | 'Difficult';
-        price?: {
-            amount: number;
-            currency: string;
-        };
     };
     itinerary: Array<{
         day: number;
@@ -39,23 +35,6 @@ export interface Package {
         title: string;
         images: string[];
     }>;
-    attractions: Array<{
-        title: string;
-        description: string;
-        image: string;
-    }>;
-    needToKnow: {
-        title: string;
-        items: string[];
-    };
-    map: {
-        image: string;
-        description: string;
-    };
-    included: string[];
-    excluded: string[];
-    recommendedFor: string[];
-    relatedPackages: string[];
     isActive: boolean;
     featured: boolean;
     displayOrder: number;
@@ -64,116 +43,91 @@ export interface Package {
 }
 
 class PackagesService {
+    private getAuthHeaders() {
+        const token = localStorage.getItem('token');
+        return {
+            'Content-Type': 'application/json',
+            'Authorization': token ? `Bearer ${token}` : ''
+        };
+    }
+
+    private getMultiPartHeaders() {
+        const token = localStorage.getItem('token');
+        return {
+            'Authorization': token ? `Bearer ${token}` : ''
+        };
+    }
+
     async getPackages(): Promise<{ packages: Package[] }> {
-        const response = await fetch(`${API_BASE_URL}/packages`);
+        const response = await fetch(`${API_BASE_URL}/packages`, {
+            headers: this.getAuthHeaders()
+        });
         if (!response.ok) throw new Error('Failed to fetch packages');
         return response.json();
     }
 
-    async getPackageById(id: string): Promise<{ package: Package }> {
-        const response = await fetch(`${API_BASE_URL}/packages/${id}`);
+    async getPackageBySlug(slug: string): Promise<Package> {
+        const response = await fetch(`${API_BASE_URL}/packages/slug/${slug}`, {
+            headers: this.getAuthHeaders()
+        });
         if (!response.ok) throw new Error('Failed to fetch package');
         return response.json();
     }
 
-    async getPackagesByCategory(categoryId: string): Promise<{ packages: Package[] }> {
-        const response = await fetch(`${API_BASE_URL}/packages/category/${categoryId}`);
-        if (!response.ok) throw new Error('Failed to fetch packages by category');
-        return response.json();
-    }
+    async createPackage(data: Omit<Package, '_id'>, files?: any): Promise<any> {
+        // Create a deep copy of the data
+        const packageData = JSON.parse(JSON.stringify(data));
 
-    async createPackage(
-        data: Omit<Package, '_id' | 'createdAt' | 'updatedAt'>,
-        files: {
-            heroBackground?: File;
-            mapImage?: File;
-            galleryImages?: File[];
-            attractionImages?: File[];
-        }
-    ): Promise<{ package: Package; message: string }> {
+        // Note: For create, we rely on the component to have already uploaded images
+        // and placed the URLs into the packageData structure.
+        // This service method now primarily handles the JSON data submission.
+
+        // However, to maintain compatibility with existing controller if it expects multipart/form-data
+        // We will stick to the previous pattern if file uploads are handled by the controller
+        // But based on the "uploadToCloudinary" usage in the component, it seems we are moving to
+        // client-side upload or separate upload calls.
+        // Let's assume the controller expects 'data' field with JSON string for complex objects.
+
         const formData = new FormData();
-
-        // Add JSON data
-        formData.append('data', JSON.stringify(data));
-
-        // Add files
-        if (files.heroBackground) formData.append('heroBackground', files.heroBackground);
-        if (files.mapImage) formData.append('mapImage', files.mapImage);
-
-        if (files.galleryImages) {
-            files.galleryImages.forEach((file) => {
-                formData.append('galleryImages', file);
-            });
-        }
-
-        if (files.attractionImages) {
-            files.attractionImages.forEach((file) => {
-                formData.append('attractionImages', file);
-            });
-        }
+        formData.append('data', JSON.stringify(packageData));
 
         const response = await fetch(`${API_BASE_URL}/packages`, {
             method: 'POST',
-            body: formData,
+            headers: this.getMultiPartHeaders(),
+            body: formData
         });
 
         if (!response.ok) {
-            const errorData = await response.json().catch(() => ({ error: 'Failed to create package' }));
-            throw new Error(errorData.error || 'Failed to create package');
+            const error = await response.json();
+            throw new Error(error.message || 'Failed to create package');
         }
         return response.json();
     }
 
-    async updatePackage(
-        id: string,
-        data: Partial<Package>,
-        files?: {
-            heroBackground?: File;
-            mapImage?: File;
-            galleryImages?: File[];
-            attractionImages?: File[];
-        }
-    ): Promise<{ package: Package; message: string }> {
+    async updatePackage(id: string, data: Partial<Package>, files?: any): Promise<any> {
+        const packageData = JSON.parse(JSON.stringify(data));
+
         const formData = new FormData();
-
-        // Add JSON data
-        formData.append('data', JSON.stringify(data));
-
-        // Add files if provided
-        if (files) {
-            if (files.heroBackground) formData.append('heroBackground', files.heroBackground);
-            if (files.mapImage) formData.append('mapImage', files.mapImage);
-
-            if (files.galleryImages) {
-                files.galleryImages.forEach((file) => {
-                    formData.append('galleryImages', file);
-                });
-            }
-
-            if (files.attractionImages) {
-                files.attractionImages.forEach((file) => {
-                    formData.append('attractionImages', file);
-                });
-            }
-        }
+        formData.append('data', JSON.stringify(packageData));
 
         const response = await fetch(`${API_BASE_URL}/packages/${id}`, {
             method: 'PUT',
-            body: formData,
+            headers: this.getMultiPartHeaders(),
+            body: formData
         });
 
         if (!response.ok) {
-            const errorData = await response.json().catch(() => ({ error: 'Failed to update package' }));
-            throw new Error(errorData.error || 'Failed to update package');
+            const error = await response.json();
+            throw new Error(error.message || 'Failed to update package');
         }
         return response.json();
     }
 
-    async deletePackage(id: string): Promise<{ message: string }> {
+    async deletePackage(id: string): Promise<any> {
         const response = await fetch(`${API_BASE_URL}/packages/${id}`, {
             method: 'DELETE',
+            headers: this.getAuthHeaders()
         });
-
         if (!response.ok) throw new Error('Failed to delete package');
         return response.json();
     }

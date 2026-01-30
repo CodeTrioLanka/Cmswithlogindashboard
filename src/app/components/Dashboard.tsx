@@ -10,6 +10,7 @@ import { ThingsToDoSection } from './sections/ThingsToDoSection';
 import { ServicesSection } from './sections/ServicesSection';
 import { ReviewsSection } from './sections/ReviewsSection';
 import { ContactSection } from './sections/ContactSection';
+import natureEscapeLogo from '../../assets/nature-escape-logo.png';
 
 interface DashboardProps {
   cmsData: CMSData;
@@ -76,12 +77,10 @@ export function Dashboard({ cmsData, onUpdate, onLogout, user }: DashboardProps)
           {/* Logo */}
           <div className="p-6 border-b border-gray-200">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-                <Home className="w-6 h-6 text-white" />
-              </div>
+              <img src={natureEscapeLogo} alt="Nature Escape Logo" className="w-16 h-16 object-contain" />
               <div>
-                <h1 className="text-lg font-bold text-gray-900">CMS</h1>
-                <p className="text-xs text-gray-600">Content Manager</p>
+                <h1 className="text-lg font-bold text-gray-900">Nature Escape</h1>
+                <p className="text-xs text-gray-600">Admin Dashboard</p>
               </div>
             </div>
           </div>
@@ -97,7 +96,7 @@ export function Dashboard({ cmsData, onUpdate, onLogout, user }: DashboardProps)
                     key={item.id}
                     onClick={() => setActiveSection(item.id)}
                     className={`w-full flex items-center justify-between px-4 py-3 rounded-lg text-left transition-all ${isActive
-                      ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-md'
+                      ? 'bg-gradient-to-r from-green-700 to-emerald-600 text-white shadow-md'
                       : 'text-gray-700 hover:bg-gray-100'
                       }`}
                   >
@@ -148,7 +147,7 @@ export function Dashboard({ cmsData, onUpdate, onLogout, user }: DashboardProps)
               </div>
               {/* <button
                 onClick={handleSave}
-                className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:from-blue-600 hover:to-purple-700 transition-all shadow-md hover:shadow-lg font-medium"
+                className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-green-700 to-emerald-600 text-white rounded-lg hover:from-green-800 hover:to-emerald-700 transition-all shadow-md hover:shadow-lg font-medium"
               >
                 <Save className="w-4 h-4" />
                 Save Changes

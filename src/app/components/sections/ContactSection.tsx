@@ -7,7 +7,7 @@ export function ContactSection() {
       {/* Contact Information */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
         <div className="flex items-center gap-2 mb-5">
-          <Mail className="w-5 h-5 text-blue-600" />
+          <Mail className="w-5 h-5 text-green-600" />
           <h3 className="text-lg font-semibold text-gray-900">Contact Information</h3>
         </div>
 
@@ -22,7 +22,7 @@ export function ContactSection() {
             <input
               type="email"
               defaultValue="info@example.com"
-              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
               placeholder="info@example.com"
             />
           </div>
@@ -37,7 +37,7 @@ export function ContactSection() {
             <input
               type="tel"
               defaultValue="+1 234 567 890"
-              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
               placeholder="+1 234 567 890"
             />
           </div>
@@ -52,7 +52,7 @@ export function ContactSection() {
             <textarea
               defaultValue="123 Street Name, City, Country"
               rows={3}
-              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-none"
+              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all resize-none"
               placeholder="123 Street Name, City, Country"
             />
           </div>
@@ -67,7 +67,7 @@ export function ContactSection() {
             <input
               type="url"
               defaultValue="https://maps.google.com/..."
-              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
               placeholder="https://maps.google.com/..."
             />
           </div>
@@ -77,7 +77,7 @@ export function ContactSection() {
       {/* Social Media */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
         <div className="flex items-center gap-2 mb-5">
-          <Globe className="w-5 h-5 text-purple-600" />
+          <Globe className="w-5 h-5 text-green-600" />
           <h3 className="text-lg font-semibold text-gray-900">Social Media Links</h3>
         </div>
 
@@ -87,7 +87,7 @@ export function ContactSection() {
             <input
               type="url"
               defaultValue="https://facebook.com/yourpage"
-              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
               placeholder="https://facebook.com/yourpage"
             />
           </div>
@@ -97,7 +97,7 @@ export function ContactSection() {
             <input
               type="url"
               defaultValue="https://instagram.com/yourprofile"
-              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
               placeholder="https://instagram.com/yourprofile"
             />
           </div>
@@ -107,7 +107,7 @@ export function ContactSection() {
             <input
               type="url"
               defaultValue="https://twitter.com/yourhandle"
-              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
               placeholder="https://twitter.com/yourhandle"
             />
           </div>
