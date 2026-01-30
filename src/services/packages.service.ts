@@ -59,17 +59,13 @@ class PackagesService {
     }
 
     async getPackages(): Promise<{ packages: Package[] }> {
-        const response = await fetch(`${API_BASE_URL}/packages`, {
-            headers: this.getAuthHeaders()
-        });
+        const response = await fetch(`${API_BASE_URL}/packages`);
         if (!response.ok) throw new Error('Failed to fetch packages');
         return response.json();
     }
 
     async getPackageBySlug(slug: string): Promise<Package> {
-        const response = await fetch(`${API_BASE_URL}/packages/slug/${slug}`, {
-            headers: this.getAuthHeaders()
-        });
+        const response = await fetch(`${API_BASE_URL}/packages/slug/${slug}`);
         if (!response.ok) throw new Error('Failed to fetch package');
         return response.json();
     }

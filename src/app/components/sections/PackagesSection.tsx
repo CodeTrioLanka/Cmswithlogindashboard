@@ -41,9 +41,16 @@ export function PackagesSection() {
                 packagesService.getPackages(),
                 tourCategoriesService.getTourCategories()
             ]);
-            console.log('Loaded packages:', packagesData.packages);
+            console.log('Raw packages response:', packagesData);
             console.log('Loaded categories:', categoriesData.tours);
-            setPackages(packagesData.packages);
+
+            // Handle different response structures (array vs object)
+            const responseData = packagesData as any;
+            const packagesList = Array.isArray(responseData)
+                ? responseData
+                : (responseData.packages || responseData.data || []);
+
+            setPackages(packagesList);
             setCategories(categoriesData.tours);
         } catch (error) {
             console.error('Failed to load data:', error);
