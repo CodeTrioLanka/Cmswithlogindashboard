@@ -245,10 +245,7 @@ export function ServicesSection({ data: _initialData, onChange: _onChange }: Ser
                   </button>
                 </div>
               </div>
-              <button className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-all" title="Remove service">
-                <Trash2 className="w-4 h-4" />
-              </button>
-            </div>
+
 
               <div className="space-y-4">
                 <div>
