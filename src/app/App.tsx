@@ -40,16 +40,17 @@ export interface ExcursionData {
 }
 
 export interface ThingsToDoData {
+  _id?: string;
   title: string;
   description: string;
-  category: string;
   image: string;
 }
 
 export interface ServiceData {
+  _id?: string;
   title: string;
   description: string;
-  icon: string;
+  image: string;
 }
 
 export interface ReviewData {
@@ -156,8 +157,8 @@ export default function App() {
       {!isLoggedIn ? (
         <Login onLogin={handleLogin} />
       ) : (
-        <Dashboard 
-          cmsData={cmsData} 
+        <Dashboard
+          cmsData={cmsData}
           onUpdate={handleUpdateData}
           onLogout={handleLogout}
           user={user || undefined}
