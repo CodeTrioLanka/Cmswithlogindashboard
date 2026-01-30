@@ -1,14 +1,16 @@
 import { useState } from 'react';
-import { LogOut, Save, Home, Info, MapPin, Compass, Activity, Briefcase, Star, Mail, ChevronRight } from 'lucide-react';
+import { LogOut, Save, Home, Info, MapPin, Compass, Activity, Briefcase, Star, Mail, ChevronRight, FolderTree, Package } from 'lucide-react';
 import type { CMSData } from '../App';
 import { HomeSection } from './sections/HomeSection';
 import { AboutUsSection } from './sections/AboutUsSection';
-import { ToursSection } from './sections/ToursSection';
+import { TourCategoriesSection } from './sections/TourCategoriesSection';
+import { PackagesSection } from './sections/PackagesSection';
 import { ExcursionsSection } from './sections/ExcursionsSection';
 import { ThingsToDoSection } from './sections/ThingsToDoSection';
 import { ServicesSection } from './sections/ServicesSection';
 import { ReviewsSection } from './sections/ReviewsSection';
 import { ContactSection } from './sections/ContactSection';
+import natureEscapeLogo from '../../assets/nature-escape-logo.png';
 
 interface DashboardProps {
   cmsData: CMSData;
@@ -17,7 +19,7 @@ interface DashboardProps {
   user?: { id: string; email: string; role: string };
 }
 
-type Section = 'home' | 'about' | 'tours' | 'excursions' | 'things' | 'services' | 'reviews' | 'contact';
+type Section = 'home' | 'about' | 'tourCategories' | 'packages' | 'excursions' | 'things' | 'services' | 'reviews' | 'contact';
 
 export function Dashboard({ cmsData, onUpdate, onLogout, user }: DashboardProps) {
   const [activeSection, setActiveSection] = useState<Section>('home');
@@ -27,7 +29,8 @@ export function Dashboard({ cmsData, onUpdate, onLogout, user }: DashboardProps)
   const menuItems = [
     { id: 'home' as Section, label: 'Home', icon: Home },
     { id: 'about' as Section, label: 'About Us', icon: Info },
-    { id: 'tours' as Section, label: 'Sri Lanka Tours', icon: MapPin },
+    { id: 'tourCategories' as Section, label: 'Sri Lanka Tours', icon: FolderTree },
+    { id: 'packages' as Section, label: 'Tour Packages', icon: Package },
     { id: 'excursions' as Section, label: 'Excursions', icon: Compass },
     { id: 'things' as Section, label: 'Things To Do', icon: Activity },
     { id: 'services' as Section, label: 'Services', icon: Briefcase },
@@ -47,8 +50,10 @@ export function Dashboard({ cmsData, onUpdate, onLogout, user }: DashboardProps)
         return <HomeSection data={formData.home} onChange={(data) => setFormData({ ...formData, home: data })} />;
       case 'about':
         return <AboutUsSection data={formData.aboutUs} onChange={(data) => setFormData({ ...formData, aboutUs: data })} />;
-      case 'tours':
-        return <ToursSection data={formData.tours} onChange={(data) => setFormData({ ...formData, tours: data })} />;
+      case 'tourCategories':
+        return <TourCategoriesSection />;
+      case 'packages':
+        return <PackagesSection />;
       case 'excursions':
         return <ExcursionsSection data={formData.excursions} onChange={(data) => setFormData({ ...formData, excursions: data })} />;
       case 'things':
@@ -72,12 +77,10 @@ export function Dashboard({ cmsData, onUpdate, onLogout, user }: DashboardProps)
           {/* Logo */}
           <div className="p-6 border-b border-gray-200">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-                <Home className="w-6 h-6 text-white" />
-              </div>
+              <img src={natureEscapeLogo} alt="Nature Escape Logo" className="w-16 h-16 object-contain" />
               <div>
-                <h1 className="text-lg font-bold text-gray-900">CMS</h1>
-                <p className="text-xs text-gray-600">Content Manager</p>
+                <h1 className="text-lg font-bold text-gray-900">Nature Escape</h1>
+                <p className="text-xs text-gray-600">Admin Dashboard</p>
               </div>
             </div>
           </div>
@@ -92,11 +95,10 @@ export function Dashboard({ cmsData, onUpdate, onLogout, user }: DashboardProps)
                   <button
                     key={item.id}
                     onClick={() => setActiveSection(item.id)}
-                    className={`w-full flex items-center justify-between px-4 py-3 rounded-lg text-left transition-all ${
-                      isActive
-                        ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-md'
-                        : 'text-gray-700 hover:bg-gray-100'
-                    }`}
+                    className={`w-full flex items-center justify-between px-4 py-3 rounded-lg text-left transition-all ${isActive
+                      ? 'bg-gradient-to-r from-green-700 to-emerald-600 text-white shadow-md'
+                      : 'text-gray-700 hover:bg-gray-100'
+                      }`}
                   >
                     <div className="flex items-center gap-3">
                       <Icon className="w-5 h-5" />
@@ -145,7 +147,7 @@ export function Dashboard({ cmsData, onUpdate, onLogout, user }: DashboardProps)
               </div>
               {/* <button
                 onClick={handleSave}
-                className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:from-blue-600 hover:to-purple-700 transition-all shadow-md hover:shadow-lg font-medium"
+                className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-green-700 to-emerald-600 text-white rounded-lg hover:from-green-800 hover:to-emerald-700 transition-all shadow-md hover:shadow-lg font-medium"
               >
                 <Save className="w-4 h-4" />
                 Save Changes

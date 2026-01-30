@@ -134,7 +134,7 @@ export function ContactSection() {
       {/* Contact Information */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
         <div className="flex items-center gap-2 mb-5">
-          <Mail className="w-5 h-5 text-blue-600" />
+          <Mail className="w-5 h-5 text-green-600" />
           <h3 className="text-lg font-semibold text-gray-900">Contact Information</h3>
         </div>
 
@@ -212,7 +212,7 @@ export function ContactSection() {
       {/* Social Media */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
         <div className="flex items-center gap-2 mb-5">
-          <Globe className="w-5 h-5 text-purple-600" />
+          <Globe className="w-5 h-5 text-green-600" />
           <h3 className="text-lg font-semibold text-gray-900">Social Media Links</h3>
         </div>
 

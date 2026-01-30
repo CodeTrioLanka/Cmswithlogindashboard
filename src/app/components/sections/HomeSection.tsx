@@ -79,7 +79,7 @@ export function HomeSection() {
   const handleFileSelect = async (field: string, file: File | File[]) => {
     // Store old image URL for deletion
     const oldImageUrl = field === 'gallery' ? null : homeData[field as keyof HomeData] as string;
-    
+
     // Auto-upload to Cloudinary
     setUploading((prev) => ({ ...prev, [field]: true }));
     try {
@@ -91,12 +91,12 @@ export function HomeSection() {
         toast.success(`${urls.length} images uploaded successfully!`);
       } else {
         const url = await uploadToCloudinary(file);
-        
+
         // Delete old image if it exists and is different
         if (oldImageUrl && oldImageUrl !== url && oldImageUrl.includes('cloudinary')) {
           await deleteFromCloudinary(oldImageUrl);
         }
-        
+
         setHomeData((prev) => ({ ...prev, [field]: url }));
         toast.success('Image uploaded successfully!');
       }
@@ -189,18 +189,18 @@ export function HomeSection() {
           <button
             onClick={isEditing ? handleSubmit : () => setIsEditing(true)}
             disabled={loading}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-all"
+            className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 transition-all"
           >
             {isEditing ? <Save className="w-4 h-4" /> : <Edit className="w-4 h-4" />}
             {loading ? "Saving..." : isEditing ? "Save" : "Edit"}
           </button>
         </div>
       </div>
-    
+
       {/* Hero Section */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
         <div className="flex items-center gap-2 mb-5">
-          <Home className="w-5 h-5 text-blue-600" />
+          <Home className="w-5 h-5 text-green-600" />
           <h3 className="text-lg font-semibold text-gray-900">Hero Section</h3>
         </div>
         <div className="grid grid-cols-1 gap-5">
@@ -213,7 +213,7 @@ export function HomeSection() {
               value={homeData.title}
               onChange={(e) => handleInputChange("title", e.target.value)}
               readOnly={!isEditing}
-              className={`w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${!isEditing ? 'bg-gray-50 cursor-not-allowed' : ''}`}
+              className={`w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all ${!isEditing ? 'bg-gray-50 cursor-not-allowed' : ''}`}
               placeholder="Enter main title"
             />
           </div>
@@ -226,7 +226,7 @@ export function HomeSection() {
               onChange={(e) => handleInputChange("subtitle", e.target.value)}
               readOnly={!isEditing}
               rows={3}
-              className={`w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-none ${!isEditing ? 'bg-gray-50 cursor-not-allowed' : ''}`}
+              className={`w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all resize-none ${!isEditing ? 'bg-gray-50 cursor-not-allowed' : ''}`}
               placeholder="Enter subtitle"
             />
           </div>
@@ -240,7 +240,7 @@ export function HomeSection() {
                 value={homeData.homebg}
                 onChange={(e) => handleInputChange("homebg", e.target.value)}
                 readOnly={!isEditing}
-                className={`flex-1 px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${!isEditing ? 'bg-gray-50 cursor-not-allowed' : ''}`}
+                className={`flex-1 px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all ${!isEditing ? 'bg-gray-50 cursor-not-allowed' : ''}`}
                 placeholder="Background image URL"
               />
               <button
@@ -273,7 +273,7 @@ export function HomeSection() {
       {/* Statistics */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
         <div className="flex items-center gap-2 mb-5">
-          <BarChart3 className="w-5 h-5 text-purple-600" />
+          <BarChart3 className="w-5 h-5 text-green-600" />
           <h3 className="text-lg font-semibold text-gray-900">Statistics</h3>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
@@ -288,7 +288,7 @@ export function HomeSection() {
                 handleInputChange("year_of_exp", parseInt(e.target.value) || 0)
               }
               readOnly={!isEditing}
-              className={`w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${!isEditing ? 'bg-gray-50 cursor-not-allowed' : ''}`}
+              className={`w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all ${!isEditing ? 'bg-gray-50 cursor-not-allowed' : ''}`}
               placeholder="0"
             />
           </div>
@@ -306,7 +306,7 @@ export function HomeSection() {
                 )
               }
               readOnly={!isEditing}
-              className={`w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${!isEditing ? 'bg-gray-50 cursor-not-allowed' : ''}`}
+              className={`w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all ${!isEditing ? 'bg-gray-50 cursor-not-allowed' : ''}`}
               placeholder="0"
             />
           </div>
@@ -321,7 +321,7 @@ export function HomeSection() {
                 handleInputChange("total_tours", parseInt(e.target.value) || 0)
               }
               readOnly={!isEditing}
-              className={`w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${!isEditing ? 'bg-gray-50 cursor-not-allowed' : ''}`}
+              className={`w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all ${!isEditing ? 'bg-gray-50 cursor-not-allowed' : ''}`}
               placeholder="0"
             />
           </div>
@@ -339,7 +339,7 @@ export function HomeSection() {
                 )
               }
               readOnly={!isEditing}
-              className={`w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${!isEditing ? 'bg-gray-50 cursor-not-allowed' : ''}`}
+              className={`w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all ${!isEditing ? 'bg-gray-50 cursor-not-allowed' : ''}`}
               placeholder="0"
             />
           </div>
@@ -367,7 +367,7 @@ export function HomeSection() {
                   handleInputChange("destinationImage", e.target.value)
                 }
                 readOnly={!isEditing}
-                className={`flex-1 px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${!isEditing ? 'bg-gray-50 cursor-not-allowed' : ''}`}
+                className={`flex-1 px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all ${!isEditing ? 'bg-gray-50 cursor-not-allowed' : ''}`}
                 placeholder="Image URL"
               />
               <button
@@ -404,7 +404,7 @@ export function HomeSection() {
                   handleInputChange("personalizedImage", e.target.value)
                 }
                 readOnly={!isEditing}
-                className={`flex-1 px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${!isEditing ? 'bg-gray-50 cursor-not-allowed' : ''}`}
+                className={`flex-1 px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all ${!isEditing ? 'bg-gray-50 cursor-not-allowed' : ''}`}
                 placeholder="Image URL"
               />
               <button
@@ -436,14 +436,14 @@ export function HomeSection() {
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
         <div className="flex items-center justify-between mb-5">
           <div className="flex items-center gap-2">
-            <Image className="w-5 h-5 text-orange-600" />
+            <Image className="w-5 h-5 text-green-600" />
             <h3 className="text-lg font-semibold text-gray-900">Gallery</h3>
           </div>
           <button
             type="button"
             onClick={() => createFileInput("gallery", true)}
             disabled={!isEditing || uploading.gallery}
-            className={`flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all ${!isEditing || uploading.gallery ? 'opacity-50 cursor-not-allowed' : ''}`}
+            className={`flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all ${!isEditing || uploading.gallery ? 'opacity-50 cursor-not-allowed' : ''}`}
           >
             {uploading.gallery ? (
               <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -467,7 +467,7 @@ export function HomeSection() {
                     const imageToDelete = homeData.gallery[index];
                     const newGallery = homeData.gallery.filter((_, i) => i !== index);
                     setHomeData((prev) => ({ ...prev, gallery: newGallery }));
-                    
+
                     // Delete from Cloudinary
                     if (imageToDelete.includes('cloudinary')) {
                       await deleteFromCloudinary(imageToDelete);

@@ -245,6 +245,10 @@ export function ThingsToDoSection({ data: _initialData, onChange: _onChange }: T
                   </button>
                 </div>
               </div>
+              <button className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-all" title="Remove activity">
+                <Trash2 className="w-4 h-4" />
+              </button>
+            </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div className="md:col-span-2">
