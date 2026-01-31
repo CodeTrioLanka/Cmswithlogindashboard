@@ -114,7 +114,7 @@ export function ContactSection() {
             <button
               onClick={() => setIsEditing(false)}
               disabled={loading}
-              className="inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:from-blue-600 hover:to-purple-700 transition-all shadow-md font-medium"
+              className="inline-flex items-center gap-2 px-4 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all shadow-md font-medium"
             >
               <X className="w-4 h-4" />
               Cancel
@@ -123,7 +123,7 @@ export function ContactSection() {
           <button
             onClick={isEditing ? handleSave : () => setIsEditing(true)}
             disabled={loading}
-            className="inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:from-blue-600 hover:to-purple-700 transition-all shadow-md font-medium"
+            className="inline-flex items-center gap-2 px-4 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all shadow-md font-medium"
           >
             {isEditing ? <Save className="w-4 h-4" /> : <Edit className="w-4 h-4" />}
             {loading ? "Saving..." : isEditing ? "Save" : "Edit"}
@@ -151,7 +151,7 @@ export function ContactSection() {
               value={contactData.email}
               onChange={(e) => handleInputChange('email', e.target.value)}
               readOnly={!isEditing}
-              className={`w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${!isEditing ? 'bg-gray-50 cursor-not-allowed' : ''}`}
+              className={`w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all ${!isEditing ? 'bg-gray-50 cursor-not-allowed' : ''}`}
               placeholder="info@example.com"
             />
           </div>
@@ -168,7 +168,7 @@ export function ContactSection() {
               value={contactData.phone}
               onChange={(e) => handleInputChange('phone', e.target.value)}
               readOnly={!isEditing}
-              className={`w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${!isEditing ? 'bg-gray-50 cursor-not-allowed' : ''}`}
+              className={`w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all ${!isEditing ? 'bg-gray-50 cursor-not-allowed' : ''}`}
               placeholder="+1 234 567 890"
             />
           </div>
@@ -185,7 +185,7 @@ export function ContactSection() {
               onChange={(e) => handleInputChange('address', e.target.value)}
               readOnly={!isEditing}
               rows={3}
-              className={`w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-none ${!isEditing ? 'bg-gray-50 cursor-not-allowed' : ''}`}
+              className={`w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all resize-none ${!isEditing ? 'bg-gray-50 cursor-not-allowed' : ''}`}
               placeholder="123 Street Name, City, Country"
             />
           </div>
@@ -202,7 +202,7 @@ export function ContactSection() {
               value={contactData.googleMap}
               onChange={(e) => handleInputChange('googleMap', e.target.value)}
               readOnly={!isEditing}
-              className={`w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${!isEditing ? 'bg-gray-50 cursor-not-allowed' : ''}`}
+              className={`w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all ${!isEditing ? 'bg-gray-50 cursor-not-allowed' : ''}`}
               placeholder="https://maps.google.com/..."
             />
           </div>
@@ -224,7 +224,7 @@ export function ContactSection() {
               value={contactData.socials.facebook}
               onChange={(e) => handleSocialChange('facebook', e.target.value)}
               readOnly={!isEditing}
-              className={`w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${!isEditing ? 'bg-gray-50 cursor-not-allowed' : ''}`}
+              className={`w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all ${!isEditing ? 'bg-gray-50 cursor-not-allowed' : ''}`}
               placeholder="https://facebook.com/yourpage"
             />
           </div>
@@ -236,7 +236,7 @@ export function ContactSection() {
               value={contactData.socials.instagram}
               onChange={(e) => handleSocialChange('instagram', e.target.value)}
               readOnly={!isEditing}
-              className={`w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${!isEditing ? 'bg-gray-50 cursor-not-allowed' : ''}`}
+              className={`w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all ${!isEditing ? 'bg-gray-50 cursor-not-allowed' : ''}`}
               placeholder="https://instagram.com/yourprofile"
             />
           </div>
@@ -248,7 +248,7 @@ export function ContactSection() {
               value={contactData.socials.twitter}
               onChange={(e) => handleSocialChange('twitter', e.target.value)}
               readOnly={!isEditing}
-              className={`w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${!isEditing ? 'bg-gray-50 cursor-not-allowed' : ''}`}
+              className={`w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all ${!isEditing ? 'bg-gray-50 cursor-not-allowed' : ''}`}
               placeholder="https://twitter.com/yourhandle"
             />
           </div>

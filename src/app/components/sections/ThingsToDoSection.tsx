@@ -169,7 +169,7 @@ export function ThingsToDoSection({ data: _initialData, onChange: _onChange }: T
         {/* POPUP BOX */}
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <button className="inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:from-blue-600 hover:to-purple-700 transition-all shadow-md font-medium">
+            <button className="inline-flex items-center gap-2 px-4 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all shadow-md font-medium">
               <Plus className="w-4 h-4" />
               Add Activity
             </button>
@@ -233,7 +233,7 @@ export function ThingsToDoSection({ data: _initialData, onChange: _onChange }: T
                 <div className="flex gap-2">
                   <button
                     onClick={() => handleSaveActivity(activity)}
-                    className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
+                    className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-all"
                     title="Save changes"
                   >
                     <Save className="w-4 h-4" />
@@ -256,7 +256,7 @@ export function ThingsToDoSection({ data: _initialData, onChange: _onChange }: T
                     type="text"
                     value={activity.title}
                     onChange={(e) => handleLocalUpdate(index, 'title', e.target.value)}
-                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
                     placeholder="Enter activity title"
                   />
                 </div>
@@ -266,7 +266,7 @@ export function ThingsToDoSection({ data: _initialData, onChange: _onChange }: T
                     value={activity.description}
                     onChange={(e) => handleLocalUpdate(index, 'description', e.target.value)}
                     rows={3}
-                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-none"
+                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all resize-none"
                     placeholder="Enter activity description"
                   />
                 </div>
@@ -276,7 +276,7 @@ export function ThingsToDoSection({ data: _initialData, onChange: _onChange }: T
                     type="text"
                     value={activity.image}
                     onChange={(e) => handleLocalUpdate(index, 'image', e.target.value)}
-                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
                     placeholder="https://example.com/activity-image.jpg"
                   />
                 </div>

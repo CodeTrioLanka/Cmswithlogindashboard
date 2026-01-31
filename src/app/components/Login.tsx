@@ -87,7 +87,7 @@ export function Login({ onLogin }: LoginProps) {
         <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-100">
           {/* Header */}
           <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-green-700 to-emerald-600 rounded-2xl mb-4">
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-green-600 rounded-2xl mb-4">
               <Lock className="w-8 h-8 text-white" />
             </div>
             <h1 className="text-2xl font-bold text-gray-900 mb-2">CMS Login</h1>
@@ -159,7 +159,7 @@ export function Login({ onLogin }: LoginProps) {
             <button
               type="submit"
               disabled={loading || !email || !password}
-              className="w-full bg-gradient-to-r from-green-700 to-emerald-600 text-white py-3 rounded-lg hover:from-green-800 hover:to-emerald-700 transition-all font-medium shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition-all font-medium shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? "Signing In..." : "Sign In"}
             </button>

@@ -160,7 +160,7 @@ export function AboutUsSection() {
 
   // Value handlers
   const addValue = () => {
-    setValues([...values, { icon: '', title: '', description: '', color: '#3B82F6' }]);
+    setValues([...values, { icon: '', title: '', description: '', color: '#16a34a' }]);
   };
 
   const updateValue = (index: number, field: keyof Value, value: string) => {
@@ -199,7 +199,7 @@ export function AboutUsSection() {
     return (
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
         <div className="flex items-center justify-center py-12">
-          <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
+          <Loader2 className="w-8 h-8 text-green-600 animate-spin" />
         </div>
       </div>
     );
@@ -209,13 +209,13 @@ export function AboutUsSection() {
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-2">
-          <Info className="w-5 h-5 text-blue-600" />
+          <Info className="w-5 h-5 text-green-600" />
           <h3 className="text-lg font-semibold text-gray-900">About Us Content</h3>
         </div>
         <button
           onClick={handleSave}
           disabled={saving}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {saving ? (
             <>
@@ -249,7 +249,7 @@ export function AboutUsSection() {
         {/* Hero Section */}
         <div className="border-b pb-6">
           <div className="flex items-center gap-2 mb-4">
-            <Image className="w-5 h-5 text-blue-600" />
+            <Image className="w-5 h-5 text-green-600" />
             <h4 className="text-md font-semibold text-gray-900">Hero Section</h4>
           </div>
           <div className="space-y-4">
@@ -259,7 +259,7 @@ export function AboutUsSection() {
                 type="text"
                 value={hero.heroTitle}
                 onChange={(e) => setHero({ ...hero, heroTitle: e.target.value })}
-                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
                 placeholder="We Create Unforgettable Journeys"
               />
             </div>
@@ -269,7 +269,7 @@ export function AboutUsSection() {
                 value={hero.heroDescription}
                 onChange={(e) => setHero({ ...hero, heroDescription: e.target.value })}
                 rows={3}
-                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-none"
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all resize-none"
                 placeholder="Discover the world with us and create memories that last a lifetime..."
               />
             </div>
@@ -280,7 +280,7 @@ export function AboutUsSection() {
                   type="file"
                   accept="image/*"
                   onChange={(e) => setHeroBackgroundFile(e.target.files?.[0] || null)}
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
                 />
                 {(heroBackgroundFile || hero.heroBackground) && (
                   <div className="relative w-full h-48 rounded-lg overflow-hidden border border-gray-300">
@@ -299,7 +299,7 @@ export function AboutUsSection() {
         {/* Stats Section */}
         <div className="border-b pb-6">
           <div className="flex items-center gap-2 mb-4">
-            <TrendingUp className="w-5 h-5 text-blue-600" />
+            <TrendingUp className="w-5 h-5 text-green-600" />
             <h4 className="text-md font-semibold text-gray-900">Statistics</h4>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -309,7 +309,7 @@ export function AboutUsSection() {
                 type="number"
                 value={stats.yearExperience}
                 onChange={(e) => setStats({ ...stats, yearExperience: parseInt(e.target.value) || 0 })}
-                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
                 placeholder="10"
               />
             </div>
@@ -319,7 +319,7 @@ export function AboutUsSection() {
                 type="number"
                 value={stats.happyTravelers}
                 onChange={(e) => setStats({ ...stats, happyTravelers: parseInt(e.target.value) || 0 })}
-                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
                 placeholder="5000"
               />
             </div>
@@ -329,7 +329,7 @@ export function AboutUsSection() {
                 type="number"
                 value={stats.toursCompleted}
                 onChange={(e) => setStats({ ...stats, toursCompleted: parseInt(e.target.value) || 0 })}
-                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
                 placeholder="1000"
               />
             </div>
@@ -339,7 +339,7 @@ export function AboutUsSection() {
                 type="number"
                 value={stats.destination}
                 onChange={(e) => setStats({ ...stats, destination: parseInt(e.target.value) || 0 })}
-                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
                 placeholder="50"
               />
             </div>
@@ -350,12 +350,12 @@ export function AboutUsSection() {
         <div className="border-b pb-6">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
-              <Calendar className="w-5 h-5 text-blue-600" />
+              <Calendar className="w-5 h-5 text-green-600" />
               <h4 className="text-md font-semibold text-gray-900">Milestones</h4>
             </div>
             <button
               onClick={addMilestone}
-              className="flex items-center gap-2 px-3 py-1.5 text-sm bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors"
+              className="flex items-center gap-2 px-3 py-1.5 text-sm bg-green-50 text-green-600 rounded-lg hover:bg-green-100 transition-colors"
             >
               <Plus className="w-4 h-4" />
               Add Milestone
@@ -372,7 +372,7 @@ export function AboutUsSection() {
                         type="number"
                         value={milestone.year}
                         onChange={(e) => updateMilestone(index, 'year', parseInt(e.target.value) || 0)}
-                        className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                        className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
                         placeholder="2020"
                       />
                     </div>
@@ -382,7 +382,7 @@ export function AboutUsSection() {
                         type="text"
                         value={milestone.event}
                         onChange={(e) => updateMilestone(index, 'event', e.target.value)}
-                        className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                        className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
                         placeholder="Company Founded"
                       />
                     </div>
@@ -392,7 +392,7 @@ export function AboutUsSection() {
                         type="text"
                         value={milestone.mstone_description}
                         onChange={(e) => updateMilestone(index, 'mstone_description', e.target.value)}
-                        className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                        className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
                         placeholder="Started our journey..."
                       />
                     </div>
@@ -416,12 +416,12 @@ export function AboutUsSection() {
         <div className="border-b pb-6">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
-              <Heart className="w-5 h-5 text-blue-600" />
+              <Heart className="w-5 h-5 text-green-600" />
               <h4 className="text-md font-semibold text-gray-900">Our Values</h4>
             </div>
             <button
               onClick={addValue}
-              className="flex items-center gap-2 px-3 py-1.5 text-sm bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors"
+              className="flex items-center gap-2 px-3 py-1.5 text-sm bg-green-50 text-green-600 rounded-lg hover:bg-green-100 transition-colors"
             >
               <Plus className="w-4 h-4" />
               Add Value
@@ -438,7 +438,7 @@ export function AboutUsSection() {
                         type="text"
                         value={value.icon}
                         onChange={(e) => updateValue(index, 'icon', e.target.value)}
-                        className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                        className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
                         placeholder="Heart"
                       />
                     </div>
@@ -448,7 +448,7 @@ export function AboutUsSection() {
                         type="text"
                         value={value.title}
                         onChange={(e) => updateValue(index, 'title', e.target.value)}
-                        className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                        className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
                         placeholder="Customer First"
                       />
                     </div>
@@ -458,7 +458,7 @@ export function AboutUsSection() {
                         value={value.description}
                         onChange={(e) => updateValue(index, 'description', e.target.value)}
                         rows={2}
-                        className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-none"
+                        className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all resize-none"
                         placeholder="We prioritize our customers..."
                       />
                     </div>
@@ -475,8 +475,8 @@ export function AboutUsSection() {
                           type="text"
                           value={value.color}
                           onChange={(e) => updateValue(index, 'color', e.target.value)}
-                          className="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                          placeholder="#3B82F6"
+                          className="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+                          placeholder="#16a34a"
                         />
                       </div>
                     </div>
@@ -500,12 +500,12 @@ export function AboutUsSection() {
         <div>
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
-              <Users className="w-5 h-5 text-blue-600" />
+              <Users className="w-5 h-5 text-green-600" />
               <h4 className="text-md font-semibold text-gray-900">Team Members</h4>
             </div>
             <button
               onClick={addTeamMember}
-              className="flex items-center gap-2 px-3 py-1.5 text-sm bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors"
+              className="flex items-center gap-2 px-3 py-1.5 text-sm bg-green-50 text-green-600 rounded-lg hover:bg-green-100 transition-colors"
             >
               <Plus className="w-4 h-4" />
               Add Team Member
@@ -523,7 +523,7 @@ export function AboutUsSection() {
                           type="text"
                           value={member.name}
                           onChange={(e) => updateTeamMember(index, 'name', e.target.value)}
-                          className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                          className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
                           placeholder="John Doe"
                         />
                       </div>
@@ -533,7 +533,7 @@ export function AboutUsSection() {
                           type="text"
                           value={member.role}
                           onChange={(e) => updateTeamMember(index, 'role', e.target.value)}
-                          className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                          className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
                           placeholder="CEO & Founder"
                         />
                       </div>
@@ -544,7 +544,7 @@ export function AboutUsSection() {
                         value={member.bio}
                         onChange={(e) => updateTeamMember(index, 'bio', e.target.value)}
                         rows={2}
-                        className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-none"
+                        className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all resize-none"
                         placeholder="Brief bio about the team member..."
                       />
                     </div>
@@ -555,7 +555,7 @@ export function AboutUsSection() {
                           type="file"
                           accept="image/*"
                           onChange={(e) => handleTeamImageChange(index, e.target.files?.[0] || null)}
-                          className="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                          className="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
                         />
                         {(member.image || teamImages[index]) && (
                           <div className="w-16 h-16 rounded-lg overflow-hidden border border-gray-300">

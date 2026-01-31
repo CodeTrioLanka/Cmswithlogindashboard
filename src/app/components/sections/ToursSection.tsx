@@ -13,7 +13,7 @@ export function ToursSection() {
           <h3 className="text-lg font-semibold text-gray-900">Sri Lanka Tours</h3>
           <p className="text-sm text-gray-600 mt-1">Manage tour packages and offerings</p>
         </div>
-        <button className="inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-green-700 to-emerald-600 text-white rounded-lg hover:from-green-800 hover:to-emerald-700 transition-all shadow-md font-medium">
+        <button className="inline-flex items-center gap-2 px-4 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all shadow-md font-medium">
           <Plus className="w-4 h-4" />
           Add Tour
         </button>

@@ -167,7 +167,7 @@ export function ServicesSection({ data: _initialData, onChange: _onChange }: Ser
         </div>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <button className="inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:from-blue-600 hover:to-purple-700 transition-all shadow-md font-medium">
+            <button className="inline-flex items-center gap-2 px-4 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all shadow-md font-medium">
               <Plus className="w-4 h-4" />
               Add Service
             </button>
@@ -225,13 +225,13 @@ export function ServicesSection({ data: _initialData, onChange: _onChange }: Ser
             <div key={service._id || index} className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
               <div className="flex items-start justify-between mb-5">
                 <div className="flex items-center gap-2">
-                  <Briefcase className="w-5 h-5 text-blue-600" />
+                  <Briefcase className="w-5 h-5 text-green-600" />
                   <h4 className="font-semibold text-gray-900">Service {index + 1}</h4>
                 </div>
                 <div className="flex gap-2">
                   <button
                     onClick={() => handleSaveService(service)}
-                    className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
+                    className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-all"
                     title="Save changes"
                   >
                     <Save className="w-4 h-4" />
@@ -254,7 +254,7 @@ export function ServicesSection({ data: _initialData, onChange: _onChange }: Ser
                     type="text"
                     value={service.title}
                     onChange={(e) => handleLocalUpdate(index, 'title', e.target.value)}
-                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
                     placeholder="Enter service title"
                   />
                 </div>
@@ -265,7 +265,7 @@ export function ServicesSection({ data: _initialData, onChange: _onChange }: Ser
                     value={service.description}
                     onChange={(e) => handleLocalUpdate(index, 'description', e.target.value)}
                     rows={3}
-                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-none"
+                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all resize-none"
                     placeholder="Enter service description"
                   />
                 </div>
@@ -276,7 +276,7 @@ export function ServicesSection({ data: _initialData, onChange: _onChange }: Ser
                     type="text"
                     value={service.image}
                     onChange={(e) => handleLocalUpdate(index, 'image', e.target.value)}
-                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
                     placeholder="e.g., map, plane, car"
                   />
                 </div>
