@@ -165,6 +165,8 @@ export function ThingsToDoSection({ data: _initialData, onChange: _onChange }: T
           <h3 className="text-lg font-semibold text-gray-900">Things To Do</h3>
           <p className="text-sm text-gray-600 mt-1">Manage activities and attractions</p>
         </div>
+
+        {/* POPUP BOX */}
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
             <button className="inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:from-blue-600 hover:to-purple-700 transition-all shadow-md font-medium">
@@ -247,8 +249,8 @@ export function ThingsToDoSection({ data: _initialData, onChange: _onChange }: T
               </div>
 
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                <div className="md:col-span-2">
+              <div className="grid grid-cols-1 gap-5">
+                <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Activity Title</label>
                   <input
                     type="text"
@@ -258,8 +260,7 @@ export function ThingsToDoSection({ data: _initialData, onChange: _onChange }: T
                     placeholder="Enter activity title"
                   />
                 </div>
-
-                <div className="md:col-span-2">
+                <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
                   <textarea
                     value={activity.description}
@@ -269,8 +270,7 @@ export function ThingsToDoSection({ data: _initialData, onChange: _onChange }: T
                     placeholder="Enter activity description"
                   />
                 </div>
-
-                <div className="md:col-span-1">
+                <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Image URL</label>
                   <input
                     type="text"

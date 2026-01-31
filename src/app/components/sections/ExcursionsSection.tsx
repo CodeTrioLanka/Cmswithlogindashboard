@@ -119,6 +119,7 @@ export function ExcursionsSection() {
           <p className="text-sm text-gray-600 mt-1">Manage day trips and excursion activities</p>
         </div>
 
+        {/* POPUP BOX */}
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
             <button className="inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:from-blue-600 hover:to-purple-700 transition-all shadow-md font-medium">
@@ -239,7 +240,6 @@ export function ExcursionsSection() {
                 </div>
               </div>
 
-
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-gray-700 mb-2">Excursion Title</label>
@@ -262,38 +262,37 @@ export function ExcursionsSection() {
                     placeholder="Enter excursion description"
                   />
                 </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
-                  <Autocomplete
-                    value={excursion.category}
-                    onChange={(value) => handleLocalUpdate(index, 'category', value)}
-                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                    placeholder="e.g., Adventure"
-                    options={filters.categories}
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Destination</label>
-                  <Autocomplete
-                    value={excursion.destination}
-                    onChange={(value) => handleLocalUpdate(index, 'destination', value)}
-                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                    placeholder="e.g., Sigiriya"
-                    options={filters.destinations}
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Time/Duration</label>
-                  <Autocomplete
-                    value={excursion.time}
-                    onChange={(value) => handleLocalUpdate(index, 'time', value)}
-                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                    placeholder="e.g., 5 Hours"
-                    options={filters.times}
-                  />
+                <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-5">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
+                    <Autocomplete
+                      value={excursion.category}
+                      onChange={(value) => handleLocalUpdate(index, 'category', value)}
+                      className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                      placeholder="e.g., Adventure"
+                      options={filters.categories}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Destination</label>
+                    <Autocomplete
+                      value={excursion.destination}
+                      onChange={(value) => handleLocalUpdate(index, 'destination', value)}
+                      className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                      placeholder="e.g., Sigiriya"
+                      options={filters.destinations}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Time/Duration</label>
+                    <Autocomplete
+                      value={excursion.time}
+                      onChange={(value) => handleLocalUpdate(index, 'time', value)}
+                      className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                      placeholder="e.g., 5 Hours"
+                      options={filters.times}
+                    />
+                  </div>
                 </div>
 
                 <div className="md:col-span-2">
