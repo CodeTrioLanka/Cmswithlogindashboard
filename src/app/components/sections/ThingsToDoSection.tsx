@@ -271,7 +271,7 @@ export function ThingsToDoSection({ data: _initialData, onChange: _onChange }: T
                   </Button>
                 </div>
                 {newActivity.image && (
-                  <div className="mt-2 relative group w-full h-40">
+                  <div className="mt-2 relative group w-32 h-32">
                     <img
                       src={newActivity.image}
                       alt="Preview"
@@ -377,7 +377,7 @@ export function ThingsToDoSection({ data: _initialData, onChange: _onChange }: T
                       <img
                         src={activity.image}
                         alt="Preview"
-                        className="w-full h-48 object-cover rounded-lg border"
+                        className="w-32 h-32 object-cover rounded-lg border"
                       />
                     </div>
                   )}
