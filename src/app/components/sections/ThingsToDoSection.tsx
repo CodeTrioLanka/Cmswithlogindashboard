@@ -1,5 +1,8 @@
 import { useState, useEffect } from 'react';
-import { Activity, Plus, Trash2, Save } from 'lucide-react';
+import { Activity, Plus, Trash2, Save, Upload, X } from 'lucide-react';
+import { uploadToCloudinary } from "../../../services/cloudinaryApi";
+import { deleteFromCloudinary } from "../../../services/deleteApi";
+import { toast } from "sonner";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '../ui/dialog';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
@@ -93,6 +96,48 @@ export function ThingsToDoSection({ data: _initialData, onChange: _onChange }: T
     description: '',
     image: ''
   });
+  const [uploading, setUploading] = useState<{ [key: string]: boolean }>({});
+
+  const handleFileSelect = async (file: File, indexOrNew: number | 'new') => {
+    const isNew = indexOrNew === 'new';
+    const oldImageUrl = isNew ? newActivity.image : activities[indexOrNew as number].image;
+    const uploadKey = isNew ? 'new' : (activities[indexOrNew as number]._id || `idx-${indexOrNew}`);
+
+    setUploading((prev) => ({ ...prev, [uploadKey]: true }));
+    try {
+      const url = await uploadToCloudinary(file);
+
+      // Delete old image if it exists and is different (and hosted on cloudinary)
+      if (oldImageUrl && oldImageUrl !== url && oldImageUrl.includes('cloudinary')) {
+        await deleteFromCloudinary(oldImageUrl);
+      }
+
+      if (isNew) {
+        setNewActivity((prev) => ({ ...prev, image: url }));
+      } else {
+        handleLocalUpdate(indexOrNew as number, 'image', url);
+      }
+      toast.success('Image uploaded successfully!');
+    } catch (error) {
+      console.error('Upload error:', error);
+      toast.error(`Failed to upload image: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    } finally {
+      setUploading((prev) => ({ ...prev, [uploadKey]: false }));
+    }
+  };
+
+  const createFileInput = (indexOrNew: number | 'new') => {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "image/*";
+    input.onchange = (e) => {
+      const selectedFiles = (e.target as HTMLInputElement).files;
+      if (selectedFiles && selectedFiles[0]) {
+        handleFileSelect(selectedFiles[0], indexOrNew);
+      }
+    };
+    input.click();
+  };
 
   // Fetch activities on mount
   useEffect(() => {
@@ -151,10 +196,11 @@ export function ThingsToDoSection({ data: _initialData, onChange: _onChange }: T
 
     try {
       await updateThingToDo(activity._id, activity);
-      alert('Activity updated successfully!');
+      await updateThingToDo(activity._id, activity);
+      toast.success('Activity updated successfully!');
     } catch (error) {
       console.error('Failed to update activity:', error);
-      alert('Failed to update activity');
+      toast.error('Failed to update activity');
     }
   };
 
@@ -201,13 +247,45 @@ export function ThingsToDoSection({ data: _initialData, onChange: _onChange }: T
                 />
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="image">Image URL</Label>
-                <Input
-                  id="image"
-                  placeholder="https://example.com/image.jpg"
-                  value={newActivity.image}
-                  onChange={(e) => setNewActivity({ ...newActivity, image: e.target.value })}
-                />
+                <Label htmlFor="image">Image</Label>
+                <div className="flex gap-2">
+                  <Input
+                    id="image"
+                    placeholder="Image URL"
+                    value={newActivity.image}
+                    onChange={(e) => setNewActivity({ ...newActivity, image: e.target.value })}
+                    className="flex-1"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => createFileInput('new')}
+                    disabled={uploading['new']}
+                    className="px-3"
+                  >
+                    {uploading['new'] ? (
+                      <div className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" />
+                    ) : (
+                      <Upload className="w-4 h-4" />
+                    )}
+                  </Button>
+                </div>
+                {newActivity.image && (
+                  <div className="mt-2 relative group w-full h-40">
+                    <img
+                      src={newActivity.image}
+                      alt="Preview"
+                      className="w-full h-full object-cover rounded-md border"
+                    />
+                    <button
+                      onClick={() => setNewActivity({ ...newActivity, image: '' })}
+                      className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                      title="Remove image"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
             <DialogFooter>
@@ -271,14 +349,38 @@ export function ThingsToDoSection({ data: _initialData, onChange: _onChange }: T
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Image URL</label>
-                  <input
-                    type="text"
-                    value={activity.image}
-                    onChange={(e) => handleLocalUpdate(index, 'image', e.target.value)}
-                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
-                    placeholder="https://example.com/activity-image.jpg"
-                  />
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Image</label>
+                  <div className="flex gap-2 mb-2">
+                    <input
+                      type="text"
+                      value={activity.image}
+                      onChange={(e) => handleLocalUpdate(index, 'image', e.target.value)}
+                      className="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+                      placeholder="Image URL"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => createFileInput(index)}
+                      disabled={uploading[activity._id || `idx-${index}`]}
+                      className={`px-4 py-2.5 bg-gray-100 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-200 transition-all flex items-center gap-2 ${uploading[activity._id || `idx-${index}`] ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    >
+                      {uploading[activity._id || `idx-${index}`] ? (
+                        <div className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" />
+                      ) : (
+                        <Upload className="w-4 h-4" />
+                      )}
+                      Browse
+                    </button>
+                  </div>
+                  {activity.image && (
+                    <div className="mt-2">
+                      <img
+                        src={activity.image}
+                        alt="Preview"
+                        className="w-full h-48 object-cover rounded-lg border"
+                      />
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
