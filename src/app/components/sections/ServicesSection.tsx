@@ -7,7 +7,7 @@ import { Label } from '../ui/label';
 import { Textarea } from '../ui/textarea';
 import { toast } from 'sonner';
 
-const BASE_URL = import.meta.env.VITE_BASE_URL || 'https://nature-escape-web-back.vercel.app';
+const BASE_URL = import.meta.env.VITE_BASE_URL || 'http://localhost:5000';
 
 // ============ INTERFACES ============
 interface ServiceData {
@@ -25,72 +25,44 @@ interface ServiceHeroData {
   description: string;
 }
 
-// ============ SERVICE HERO API ============
-const fetchServiceHero = async (): Promise<ServiceHeroData | null> => {
+// ============ UNIFIED API ============
+const fetchServicePageData = async (): Promise<{ hero: ServiceHeroData | null; services: ServiceData[] }> => {
   try {
-    const response = await fetch(`${BASE_URL}/api/service-hero`);
-    if (!response.ok) throw new Error('Failed to fetch service hero');
+    const response = await fetch(`${BASE_URL}/api/service-page`);
+    if (!response.ok) throw new Error('Failed to fetch service page data');
     const data = await response.json();
-    return data.hero || null;
+    return {
+      hero: data.hero || null,
+      services: data.services || []
+    };
   } catch (error) {
-    console.error('Error fetching service hero:', error);
+    console.error('Error fetching service page data:', error);
     throw error;
   }
 };
 
-const createServiceHero = async (heroData: Omit<ServiceHeroData, '_id'>, imageFile?: File): Promise<ServiceHeroData> => {
+// ============ SERVICE HERO API ============
+const saveServiceHero = async (heroData: Partial<ServiceHeroData>, imageFile?: File): Promise<ServiceHeroData> => {
   try {
     const formData = new FormData();
     formData.append('data', JSON.stringify(heroData));
     if (imageFile) {
       formData.append('image', imageFile);
     }
-    const response = await fetch(`${BASE_URL}/api/service-hero`, {
+    const response = await fetch(`${BASE_URL}/api/service-page/hero`, {
       method: 'POST',
       body: formData,
     });
-    if (!response.ok) throw new Error('Failed to create service hero');
+    if (!response.ok) throw new Error('Failed to save service hero');
     const data = await response.json();
     return data.hero;
   } catch (error) {
-    console.error('Error creating service hero:', error);
-    throw error;
-  }
-};
-
-const updateServiceHero = async (id: string, heroData: Partial<ServiceHeroData>, imageFile?: File): Promise<ServiceHeroData> => {
-  try {
-    const formData = new FormData();
-    formData.append('data', JSON.stringify(heroData));
-    if (imageFile) {
-      formData.append('image', imageFile);
-    }
-    const response = await fetch(`${BASE_URL}/api/service-hero/${id}`, {
-      method: 'PUT',
-      body: formData,
-    });
-    if (!response.ok) throw new Error('Failed to update service hero');
-    const data = await response.json();
-    return data.hero;
-  } catch (error) {
-    console.error('Error updating service hero:', error);
+    console.error('Error saving service hero:', error);
     throw error;
   }
 };
 
 // ============ SERVICES API ============
-const fetchServices = async (): Promise<ServiceData[]> => {
-  try {
-    const response = await fetch(`${BASE_URL}/api/service`);
-    if (!response.ok) throw new Error('Failed to fetch services');
-    const data = await response.json();
-    return data.services || [];
-  } catch (error) {
-    console.error('Error fetching services:', error);
-    throw error;
-  }
-};
-
 const addServiceApi = async (serviceData: Omit<ServiceData, '_id'>, imageFile?: File): Promise<ServiceData> => {
   try {
     const formData = new FormData();
@@ -98,7 +70,7 @@ const addServiceApi = async (serviceData: Omit<ServiceData, '_id'>, imageFile?: 
     if (imageFile) {
       formData.append('image', imageFile);
     }
-    const response = await fetch(`${BASE_URL}/api/service`, {
+    const response = await fetch(`${BASE_URL}/api/service-page/services`, {
       method: 'POST',
       body: formData,
     });
@@ -118,11 +90,15 @@ const updateServiceApi = async (id: string, serviceData: Partial<ServiceData>, i
     if (imageFile) {
       formData.append('image', imageFile);
     }
-    const response = await fetch(`${BASE_URL}/api/service/${id}`, {
+    const response = await fetch(`${BASE_URL}/api/service-page/services/${id}`, {
       method: 'PUT',
       body: formData,
     });
-    if (!response.ok) throw new Error('Failed to update service');
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      console.error('Server Error Details:', errorData);
+      throw new Error(errorData.error || 'Failed to update service');
+    }
     const data = await response.json();
     return data.service;
   } catch (error) {
@@ -133,7 +109,7 @@ const updateServiceApi = async (id: string, serviceData: Partial<ServiceData>, i
 
 const deleteServiceApi = async (id: string): Promise<void> => {
   try {
-    const response = await fetch(`${BASE_URL}/api/service/${id}`, {
+    const response = await fetch(`${BASE_URL}/api/service-page/services/${id}`, {
       method: 'DELETE',
     });
     if (!response.ok) throw new Error('Failed to delete service');
@@ -175,24 +151,34 @@ export function ServicesSection() {
 
   // Load data on mount
   useEffect(() => {
-    loadHeroData();
-    loadServices();
+    loadData();
   }, []);
+
+  const loadData = async () => {
+    try {
+      setIsLoading(true);
+      setHeroLoading(true);
+      const data = await fetchServicePageData();
+
+      if (data.hero) {
+        setHeroData(data.hero);
+        setOriginalHeroData(data.hero);
+      }
+
+      setServices(data.services);
+    } catch (error) {
+      console.error('Failed to load services data:', error);
+      toast.error('Failed to load services data');
+    } finally {
+      setIsLoading(false);
+      setHeroLoading(false);
+    }
+  };
 
   // ============ HERO HANDLERS ============
   const loadHeroData = async () => {
-    try {
-      setHeroLoading(true);
-      const data = await fetchServiceHero();
-      if (data) {
-        setHeroData(data);
-        setOriginalHeroData(data);
-      }
-    } catch (error) {
-      console.error('Failed to load hero data:', error);
-    } finally {
-      setHeroLoading(false);
-    }
+    // This is now handled by loadData() but kept as a wrapper for hero updates
+    await loadData();
   };
 
   const handleHeroCancel = () => {
@@ -222,16 +208,12 @@ export function ServicesSection() {
   const handleHeroSave = async () => {
     try {
       setHeroLoading(true);
-      if (heroData._id) {
-        await updateServiceHero(heroData._id, heroData, heroImageFile || undefined);
-      } else {
-        await createServiceHero(heroData, heroImageFile || undefined);
-      }
+      await saveServiceHero(heroData, heroImageFile || undefined);
       await loadHeroData();
       setHeroImageFile(null);
       setHeroImagePreview('');
       setIsHeroEditing(false);
-      toast.success(heroData._id ? 'Hero section updated!' : 'Hero section created!');
+      toast.success('Hero section saved successfully!');
     } catch (error) {
       console.error('Failed to save hero data:', error);
       toast.error('Failed to save hero section');
@@ -242,31 +224,40 @@ export function ServicesSection() {
 
   // ============ SERVICES HANDLERS ============
   const loadServices = async () => {
-    try {
-      setIsLoading(true);
-      const data = await fetchServices();
-      setServices(data);
-    } catch (error) {
-      console.error('Failed to load services:', error);
-      toast.error('Failed to load services');
-    } finally {
-      setIsLoading(false);
-    }
+    // This is now handled by loadData() but kept as a wrapper for service updates
+    await loadData();
   };
 
   const handleNewImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error('File size too large. Please select an image under 5MB.');
+        return;
+      }
       setNewImageFile(file);
       setNewImagePreview(URL.createObjectURL(file));
+      setNewService(prev => ({ ...prev, image: '' }));
     }
   };
 
   const handleEditImageSelect = (serviceId: string, e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
+    console.log('File selected for service:', serviceId, file?.name);
     if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error('File size too large. Please select an image under 5MB.');
+        return;
+      }
       setEditImageFiles(prev => ({ ...prev, [serviceId]: file }));
       setEditImagePreviews(prev => ({ ...prev, [serviceId]: URL.createObjectURL(file) }));
+
+      // Clear the text input by updating the service state
+      setServices(prevServices =>
+        prevServices.map(s =>
+          s._id === serviceId ? { ...s, image: '' } : s
+        )
+      );
     }
   };
 
@@ -277,6 +268,7 @@ export function ServicesSection() {
     }
     try {
       setIsLoading(true);
+      console.log('Adding new service. Image file:', newImageFile?.name);
       await addServiceApi(newService, newImageFile || undefined);
       setNewService({ title: '', description: '', image: '' });
       setNewImageFile(null);
@@ -295,6 +287,7 @@ export function ServicesSection() {
   const handleRemoveService = async (id: string) => {
     if (!confirm('Are you sure you want to delete this service?')) return;
     try {
+      console.log('Deleting service:', id);
       await deleteServiceApi(id);
       await loadServices();
       toast.success('Service deleted successfully!');
@@ -311,11 +304,30 @@ export function ServicesSection() {
   };
 
   const handleSaveService = async (service: ServiceData) => {
-    if (!service._id) return;
+    console.log('handleSaveService triggered for:', service);
+    if (!service._id) {
+      console.error('Cannot save service: missing _id', service);
+      toast.error('Cannot save: Service ID missing');
+      return;
+    }
+
     try {
       setIsSaving(prev => ({ ...prev, [service._id!]: true }));
-      const imageFile = editImageFiles[service._id];
-      await updateServiceApi(service._id, service, imageFile);
+      const imageFile = editImageFiles[service._id!];
+      console.log('File found for update:', imageFile ? imageFile.name : 'No file');
+
+      console.log('Sending update to API...');
+
+      // Sanitize service data to ensure we only send what's needed
+      const servicePayload = {
+        title: service.title,
+        description: service.description,
+        image: service.image
+      };
+
+      const updatedService = await updateServiceApi(service._id, servicePayload, imageFile);
+      console.log('API Response:', updatedService);
+
       if (imageFile) {
         setEditImageFiles(prev => {
           const newFiles = { ...prev };
@@ -328,26 +340,36 @@ export function ServicesSection() {
           return newPreviews;
         });
       }
+
+      // Reload is important to get the authoritative state back
       await loadServices();
       toast.success('Service updated successfully!');
     } catch (error) {
       console.error('Failed to update service:', error);
-      toast.error('Failed to update service');
+      toast.error(`Failed to update service: ${error instanceof Error ? error.message : 'Unknown error'}`);
     } finally {
       setIsSaving(prev => ({ ...prev, [service._id!]: false }));
     }
   };
 
-  const createFileInput = (onSelect: (e: React.ChangeEvent<HTMLInputElement>) => void) => {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = 'image/*';
-    input.onchange = (e) => onSelect(e as unknown as React.ChangeEvent<HTMLInputElement>);
-    input.click();
-  };
-
   return (
     <div className="space-y-8">
+      {/* Hidden file inputs for easier access */}
+      <input
+        type="file"
+        id="hero-image-input"
+        className="hidden"
+        accept="image/*"
+        onChange={handleHeroImageSelect}
+      />
+      <input
+        type="file"
+        id="new-service-image-input"
+        className="hidden"
+        accept="image/*"
+        onChange={handleNewImageSelect}
+      />
+
       {/* ============ SERVICES HERO SECTION ============ */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
         <div className="flex justify-between items-center mb-6">
@@ -392,7 +414,7 @@ export function ServicesSection() {
               />
               <button
                 type="button"
-                onClick={() => createFileInput(handleHeroImageSelect)}
+                onClick={() => document.getElementById('hero-image-input')?.click()}
                 disabled={!isHeroEditing}
                 className={`px-4 py-2.5 bg-gray-100 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-200 transition-all flex items-center gap-2 ${!isHeroEditing ? 'opacity-50 cursor-not-allowed' : ''}`}
               >
@@ -517,7 +539,7 @@ export function ServicesSection() {
                     <Button
                       type="button"
                       variant="outline"
-                      onClick={() => createFileInput(handleNewImageSelect)}
+                      onClick={() => document.getElementById('new-service-image-input')?.click()}
                     >
                       <Upload className="w-4 h-4 mr-2" />
                       Browse
@@ -624,9 +646,21 @@ export function ServicesSection() {
                         className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all text-sm"
                         placeholder="Image URL"
                       />
+                      <input
+                        type="file"
+                        id={`service-image-input-${service._id}`}
+                        className="hidden"
+                        accept="image/*"
+                        onChange={(e) => handleEditImageSelect(service._id!, e)}
+                        onClick={(e) => ((e.target as HTMLInputElement).value = '')}
+                      />
                       <button
                         type="button"
-                        onClick={() => service._id && createFileInput((e) => handleEditImageSelect(service._id!, e))}
+                        onClick={() => {
+                          const fileInput = document.getElementById(`service-image-input-${service._id}`);
+                          if (fileInput) fileInput.click();
+                          else console.error('File input not found for ID:', service._id);
+                        }}
                         className="px-3 py-2 bg-gray-100 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-200 transition-all flex items-center gap-1 text-sm"
                       >
                         <Upload className="w-3 h-3" />
