@@ -59,7 +59,7 @@ export function Dashboard({ cmsData, onUpdate, onLogout, user }: DashboardProps)
       case 'things':
         return <ThingsToDoSection data={formData.thingsToDo} onChange={(data) => setFormData({ ...formData, thingsToDo: data })} />;
       case 'services':
-        return <ServicesSection data={formData.services} onChange={(data) => setFormData({ ...formData, services: data })} />;
+        return <ServicesSection />;
       case 'reviews':
         return <ReviewsSection data={formData.reviews} onChange={(data) => setFormData({ ...formData, reviews: data })} />;
       case 'contact':
