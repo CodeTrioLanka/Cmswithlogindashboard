@@ -1,70 +1,102 @@
 import { useState, useEffect } from 'react';
-import { Briefcase, Plus, Trash2, Save } from 'lucide-react';
+import { Briefcase, Plus, Trash2, Save, Upload, X } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '../ui/dialog';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Textarea } from '../ui/textarea';
-import type { ServiceData } from '../../App';
+import { toast } from 'sonner';
 
 const BASE_URL = import.meta.env.VITE_BASE_URL || 'https://nature-escape-web-back.vercel.app';
 
+interface ServiceData {
+  _id?: string;
+  title: string;
+  description: string;
+  image: string;
+}
+
+// Fetch all services
 const fetchServices = async (): Promise<ServiceData[]> => {
   try {
     const response = await fetch(`${BASE_URL}/api/service`);
     if (!response.ok) {
       throw new Error('Failed to fetch services');
     }
-    return await response.json();
+    const data = await response.json();
+    return data.services || [];
   } catch (error) {
     console.error('Error fetching services:', error);
     throw error;
   }
 };
 
-const addService = async (service: ServiceData): Promise<ServiceData> => {
+// Add new service with FormData
+const addServiceApi = async (serviceData: Omit<ServiceData, '_id'>, imageFile?: File): Promise<ServiceData> => {
   try {
+    const formData = new FormData();
+    formData.append('data', JSON.stringify({
+      title: serviceData.title,
+      description: serviceData.description,
+      image: serviceData.image || ''
+    }));
+
+    if (imageFile) {
+      formData.append('image', imageFile);
+    }
+
     const response = await fetch(`${BASE_URL}/api/service`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(service),
+      body: formData,
     });
 
     if (!response.ok) {
-      throw new Error('Failed to create service');
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to create service');
     }
 
-    return await response.json();
+    const data = await response.json();
+    return data.service;
   } catch (error) {
     console.error('Error creating service:', error);
     throw error;
   }
 };
 
-const updateService = async (id: string, service: Partial<ServiceData>): Promise<ServiceData> => {
+// Update service with FormData
+const updateServiceApi = async (id: string, serviceData: Partial<ServiceData>, imageFile?: File): Promise<ServiceData> => {
   try {
+    const formData = new FormData();
+    formData.append('data', JSON.stringify({
+      title: serviceData.title,
+      description: serviceData.description,
+      image: serviceData.image || ''
+    }));
+
+    if (imageFile) {
+      formData.append('image', imageFile);
+    }
+
     const response = await fetch(`${BASE_URL}/api/service/${id}`, {
       method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(service),
+      body: formData,
     });
 
     if (!response.ok) {
-      throw new Error('Failed to update service');
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to update service');
     }
 
-    return await response.json();
+    const data = await response.json();
+    return data.service;
   } catch (error) {
     console.error('Error updating service:', error);
     throw error;
   }
 };
 
-const deleteService = async (id: string): Promise<void> => {
+// Delete service
+const deleteServiceApi = async (id: string): Promise<void> => {
   try {
     const response = await fetch(`${BASE_URL}/api/service/${id}`, {
       method: 'DELETE',
@@ -79,20 +111,20 @@ const deleteService = async (id: string): Promise<void> => {
   }
 };
 
-interface ServicesSectionProps {
-  data: ServiceData[];
-  onChange: (data: ServiceData[]) => void;
-}
-
-export function ServicesSection({ data: _initialData, onChange: _onChange }: ServicesSectionProps) {
+export function ServicesSection() {
   const [services, setServices] = useState<ServiceData[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [newService, setNewService] = useState<ServiceData>({
+  const [isSaving, setIsSaving] = useState<{ [key: string]: boolean }>({});
+  const [newService, setNewService] = useState<Omit<ServiceData, '_id'>>({
     title: '',
     description: '',
     image: ''
   });
+  const [newImageFile, setNewImageFile] = useState<File | null>(null);
+  const [newImagePreview, setNewImagePreview] = useState<string>('');
+  const [editImageFiles, setEditImageFiles] = useState<{ [key: string]: File }>({});
+  const [editImagePreviews, setEditImagePreviews] = useState<{ [key: string]: string }>({});
 
   // Fetch services on mount
   useEffect(() => {
@@ -106,24 +138,48 @@ export function ServicesSection({ data: _initialData, onChange: _onChange }: Ser
       setServices(data);
     } catch (error) {
       console.error('Failed to load services:', error);
+      toast.error('Failed to load services');
     } finally {
       setIsLoading(false);
     }
   };
 
+  const handleNewImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setNewImageFile(file);
+      setNewImagePreview(URL.createObjectURL(file));
+    }
+  };
+
+  const handleEditImageSelect = (serviceId: string, e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setEditImageFiles(prev => ({ ...prev, [serviceId]: file }));
+      setEditImagePreviews(prev => ({ ...prev, [serviceId]: URL.createObjectURL(file) }));
+    }
+  };
+
   const handleAddService = async () => {
-    if (newService.title && newService.description) {
-      try {
-        setIsLoading(true);
-        await addService(newService);
-        setNewService({ title: '', description: '', image: '' });
-        setIsDialogOpen(false);
-        await loadServices();
-      } catch (error) {
-        console.error('Failed to create service:', error);
-      } finally {
-        setIsLoading(false);
-      }
+    if (!newService.title || !newService.description) {
+      toast.error('Please fill in all required fields');
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      await addServiceApi(newService, newImageFile || undefined);
+      setNewService({ title: '', description: '', image: '' });
+      setNewImageFile(null);
+      setNewImagePreview('');
+      setIsDialogOpen(false);
+      await loadServices();
+      toast.success('Service created successfully!');
+    } catch (error) {
+      console.error('Failed to create service:', error);
+      toast.error('Failed to create service');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -131,10 +187,12 @@ export function ServicesSection({ data: _initialData, onChange: _onChange }: Ser
     if (!confirm('Are you sure you want to delete this service?')) return;
 
     try {
-      await deleteService(id);
+      await deleteServiceApi(id);
       await loadServices();
+      toast.success('Service deleted successfully!');
     } catch (error) {
       console.error('Failed to delete service:', error);
+      toast.error('Failed to delete service');
     }
   };
 
@@ -150,12 +208,40 @@ export function ServicesSection({ data: _initialData, onChange: _onChange }: Ser
     if (!service._id) return;
 
     try {
-      await updateService(service._id, service);
-      alert('Service updated successfully!');
+      setIsSaving(prev => ({ ...prev, [service._id!]: true }));
+      const imageFile = editImageFiles[service._id];
+      await updateServiceApi(service._id, service, imageFile);
+
+      // Clear the edit image file after successful save
+      if (imageFile) {
+        setEditImageFiles(prev => {
+          const newFiles = { ...prev };
+          delete newFiles[service._id!];
+          return newFiles;
+        });
+        setEditImagePreviews(prev => {
+          const newPreviews = { ...prev };
+          delete newPreviews[service._id!];
+          return newPreviews;
+        });
+      }
+
+      await loadServices();
+      toast.success('Service updated successfully!');
     } catch (error) {
       console.error('Failed to update service:', error);
-      alert('Failed to update service');
+      toast.error('Failed to update service');
+    } finally {
+      setIsSaving(prev => ({ ...prev, [service._id!]: false }));
     }
+  };
+
+  const createFileInput = (onSelect: (e: React.ChangeEvent<HTMLInputElement>) => void) => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.onchange = (e) => onSelect(e as unknown as React.ChangeEvent<HTMLInputElement>);
+    input.click();
   };
 
   return (
@@ -172,7 +258,7 @@ export function ServicesSection({ data: _initialData, onChange: _onChange }: Ser
               Add Service
             </button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-[425px]">
+          <DialogContent className="sm:max-w-[500px]">
             <DialogHeader>
               <DialogTitle>Add New Service</DialogTitle>
               <DialogDescription>
@@ -181,7 +267,7 @@ export function ServicesSection({ data: _initialData, onChange: _onChange }: Ser
             </DialogHeader>
             <div className="grid gap-4 py-4">
               <div className="grid gap-2">
-                <Label htmlFor="title">Service Title</Label>
+                <Label htmlFor="title">Service Title *</Label>
                 <Input
                   id="title"
                   placeholder="Enter service title"
@@ -190,7 +276,7 @@ export function ServicesSection({ data: _initialData, onChange: _onChange }: Ser
                 />
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="description">Description</Label>
+                <Label htmlFor="description">Description *</Label>
                 <Textarea
                   id="description"
                   placeholder="Enter service description"
@@ -199,16 +285,50 @@ export function ServicesSection({ data: _initialData, onChange: _onChange }: Ser
                 />
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="image">Image</Label>
-                <Input
-                  id="image"
-                  placeholder="e.g., map, plane, car"
-                  value={newService.image}
-                  onChange={(e) => setNewService({ ...newService, image: e.target.value })}
-                />
+                <Label>Service Image</Label>
+                <div className="flex gap-2">
+                  <Input
+                    type="url"
+                    placeholder="Image URL (or upload below)"
+                    value={newService.image}
+                    onChange={(e) => setNewService({ ...newService, image: e.target.value })}
+                    className="flex-1"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => createFileInput(handleNewImageSelect)}
+                  >
+                    <Upload className="w-4 h-4 mr-2" />
+                    Browse
+                  </Button>
+                </div>
+                {(newImagePreview || newService.image) && (
+                  <div className="relative mt-2">
+                    <img
+                      src={newImagePreview || newService.image}
+                      alt="Preview"
+                      className="w-full h-32 object-cover rounded-lg border"
+                    />
+                    {newImagePreview && (
+                      <button
+                        onClick={() => {
+                          setNewImageFile(null);
+                          setNewImagePreview('');
+                        }}
+                        className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
             <DialogFooter>
+              <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
+                Cancel
+              </Button>
               <Button onClick={handleAddService} disabled={isLoading}>
                 {isLoading ? 'Saving...' : 'Save Service'}
               </Button>
@@ -231,10 +351,15 @@ export function ServicesSection({ data: _initialData, onChange: _onChange }: Ser
                 <div className="flex gap-2">
                   <button
                     onClick={() => handleSaveService(service)}
-                    className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-all"
+                    disabled={isSaving[service._id || '']}
+                    className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-all disabled:opacity-50"
                     title="Save changes"
                   >
-                    <Save className="w-4 h-4" />
+                    {isSaving[service._id || ''] ? (
+                      <div className="w-4 h-4 border-2 border-green-600 border-t-transparent rounded-full animate-spin" />
+                    ) : (
+                      <Save className="w-4 h-4" />
+                    )}
                   </button>
                   <button
                     onClick={() => service._id && handleRemoveService(service._id)}
@@ -245,7 +370,6 @@ export function ServicesSection({ data: _initialData, onChange: _onChange }: Ser
                   </button>
                 </div>
               </div>
-
 
               <div className="space-y-4">
                 <div>
@@ -271,14 +395,52 @@ export function ServicesSection({ data: _initialData, onChange: _onChange }: Ser
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">image Name</label>
-                  <input
-                    type="text"
-                    value={service.image}
-                    onChange={(e) => handleLocalUpdate(index, 'image', e.target.value)}
-                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
-                    placeholder="e.g., map, plane, car"
-                  />
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Service Image</label>
+                  <div className="flex gap-2 mb-2">
+                    <input
+                      type="url"
+                      value={service.image || ''}
+                      onChange={(e) => handleLocalUpdate(index, 'image', e.target.value)}
+                      className="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+                      placeholder="Image URL"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => service._id && createFileInput((e) => handleEditImageSelect(service._id!, e))}
+                      className="px-4 py-2.5 bg-gray-100 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-200 transition-all flex items-center gap-2"
+                    >
+                      <Upload className="w-4 h-4" />
+                      Browse
+                    </button>
+                  </div>
+                  {(editImagePreviews[service._id || ''] || service.image) && (
+                    <div className="relative">
+                      <img
+                        src={editImagePreviews[service._id || ''] || service.image}
+                        alt="Service preview"
+                        className="w-full h-32 object-cover rounded-lg border"
+                      />
+                      {editImagePreviews[service._id || ''] && (
+                        <button
+                          onClick={() => {
+                            setEditImageFiles(prev => {
+                              const newFiles = { ...prev };
+                              delete newFiles[service._id!];
+                              return newFiles;
+                            });
+                            setEditImagePreviews(prev => {
+                              const newPreviews = { ...prev };
+                              delete newPreviews[service._id!];
+                              return newPreviews;
+                            });
+                          }}
+                          className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -293,4 +455,3 @@ export function ServicesSection({ data: _initialData, onChange: _onChange }: Ser
     </div>
   );
 }
-
