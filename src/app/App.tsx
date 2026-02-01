@@ -39,11 +39,25 @@ export interface ExcursionData {
   image: string;
 }
 
-export interface ThingsToDoData {
+export interface ThingsToDoItem {
   _id?: string;
   title: string;
   description: string;
   image: string;
+}
+
+export interface ThingsToDoHero {
+  _id?: string;
+  heroImage: string;
+  title: string;
+  subtitle: string;
+  description: string;
+}
+
+export interface ThingsToDoData {
+  _id?: string;
+  thingsToDoHeroes: ThingsToDoHero[];
+  thingsToDo: ThingsToDoItem[];
 }
 
 export interface ServiceData {
@@ -77,7 +91,7 @@ export interface CMSData {
   aboutUs: AboutUsData;
   tours: TourData[];
   excursions: ExcursionData[];
-  thingsToDo: ThingsToDoData[];
+  thingsToDo: ThingsToDoData | null; // Changed to object or null
   services: ServiceData[];
   reviews: ReviewData[];
   contact: ContactData;
@@ -108,7 +122,7 @@ export default function App() {
     },
     tours: [],
     excursions: [],
-    thingsToDo: [],
+    thingsToDo: null, // Initial state
     services: [],
     reviews: [],
     contact: {
