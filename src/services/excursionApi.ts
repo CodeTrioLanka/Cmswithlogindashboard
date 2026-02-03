@@ -1,14 +1,19 @@
-/// <reference types="vite/client" />
+import { ExcursionData } from "../app/App";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL || 'https://nature-escape-web-back.vercel.app';
 
-export const fetchExcursions = async () => {
+export const fetchExcursions = async (): Promise<ExcursionData | null> => {
     try {
         const response = await fetch(`${BASE_URL}/api/excursion`);
         if (!response.ok) {
+            if (response.status === 404) return null;
             throw new Error('Failed to fetch excursions');
         }
-        return await response.json();
+        const data = await response.json();
+        if (Array.isArray(data)) {
+            return data.length > 0 ? data[0] : null;
+        }
+        return data;
     } catch (error) {
         console.error('Error fetching excursions:', error);
         throw error;
@@ -28,7 +33,7 @@ export const fetchExcursionFilters = async () => {
     }
 };
 
-export const addExcursion = async (data: any) => {
+export const addExcursion = async (data: ExcursionData) => {
     try {
         const response = await fetch(`${BASE_URL}/api/excursion`, {
             method: 'POST',
@@ -50,7 +55,7 @@ export const addExcursion = async (data: any) => {
     }
 };
 
-export const updateExcursion = async (id: string, data: any) => {
+export const updateExcursion = async (id: string, data: ExcursionData) => {
     try {
         const response = await fetch(`${BASE_URL}/api/excursion/${id}`, {
             method: 'PUT',

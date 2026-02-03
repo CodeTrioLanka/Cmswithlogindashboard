@@ -32,12 +32,29 @@ export interface TourData {
   image: string;
 }
 
-export interface ExcursionData {
+export interface ExcursionItem {
+  _id?: string;
   title: string;
-  description: string;
-  location: string;
-  price: string;
   image: string;
+  description: string;
+  category: string;
+  time: string;
+  destination: string;
+  slug?: string;
+}
+
+export interface ExcursionHero {
+  _id?: string;
+  heroImage: string;
+  title: string;
+  subtitle: string;
+  description: string;
+}
+
+export interface ExcursionData {
+  _id?: string;
+  excursionHeroes: ExcursionHero[];
+  excursion: ExcursionItem[];
 }
 
 export interface ThingsToDoItem {
@@ -91,7 +108,7 @@ export interface CMSData {
   home: HomePageData;
   aboutUs: AboutUsData;
   tours: TourData[];
-  excursions: ExcursionData[];
+  excursions: ExcursionData | null;
   thingsToDo: ThingsToDoData | null; // Changed to object or null
   services: ServiceData[];
   reviews: ReviewData[];
