@@ -10,9 +10,6 @@ export const fetchExcursions = async (): Promise<ExcursionData | null> => {
             throw new Error('Failed to fetch excursions');
         }
         const data = await response.json();
-        if (Array.isArray(data)) {
-            return data.length > 0 ? data[0] : null;
-        }
         return data;
     } catch (error) {
         console.error('Error fetching excursions:', error);
