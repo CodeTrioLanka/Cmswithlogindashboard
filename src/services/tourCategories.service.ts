@@ -1,4 +1,5 @@
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+const BASE_URL = import.meta.env.VITE_BASE_URL || 'https://nature-escape-web-back.vercel.app';
+const API_BASE_URL = `${BASE_URL}/api`;
 
 export interface TourCategory {
     _id?: string;
@@ -34,6 +35,7 @@ class TourCategoriesService {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify(data),
+                credentials: 'include'
             });
 
             if (!response.ok) throw new Error('Failed to create tour category');
@@ -58,6 +60,7 @@ class TourCategoriesService {
         const response = await fetch(`${API_BASE_URL}/tours`, {
             method: 'POST',
             body: formData,
+            credentials: 'include'
         });
 
         if (!response.ok) throw new Error('Failed to create tour category');
@@ -73,6 +76,7 @@ class TourCategoriesService {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify(data),
+                credentials: 'include'
             });
 
             if (!response.ok) throw new Error('Failed to update tour category');
@@ -99,6 +103,7 @@ class TourCategoriesService {
         const response = await fetch(`${API_BASE_URL}/tours/${id}`, {
             method: 'PUT',
             body: formData,
+            credentials: 'include'
         });
 
         if (!response.ok) throw new Error('Failed to update tour category');
@@ -108,6 +113,7 @@ class TourCategoriesService {
     async deleteTourCategory(id: string): Promise<{ message: string }> {
         const response = await fetch(`${API_BASE_URL}/tours/${id}`, {
             method: 'DELETE',
+            credentials: 'include'
         });
 
         if (!response.ok) throw new Error('Failed to delete tour category');

@@ -82,6 +82,7 @@ export function ContactSection() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(contactData),
+        credentials: 'include'
       });
 
       if (response.ok) {
@@ -101,14 +102,14 @@ export function ContactSection() {
   };
 
   if (fetchLoading) {
-    return <div className="p-6 text-center">Loading contact information...</div>;
+    return <div className="p-6 text-center text-gray-500 dark:text-gray-400 font-medium">Loading contact information...</div>;
   }
 
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold text-gray-900">Contact Settings</h2>
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Contact Settings</h2>
         <div className="flex gap-2">
           {isEditing && (
             <button
@@ -132,17 +133,17 @@ export function ContactSection() {
       </div>
 
       {/* Contact Information */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
         <div className="flex items-center gap-2 mb-5">
-          <Mail className="w-5 h-5 text-green-600" />
-          <h3 className="text-lg font-semibold text-gray-900">Contact Information</h3>
+          <Mail className="w-5 h-5 text-green-600 dark:text-green-500" />
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Contact Information</h3>
         </div>
 
         <div className="space-y-5">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               <div className="flex items-center gap-2">
-                <Mail className="w-4 h-4 text-gray-500" />
+                <Mail className="w-4 h-4 text-gray-500 dark:text-gray-400" />
                 Email Address
               </div>
             </label>
@@ -151,15 +152,15 @@ export function ContactSection() {
               value={contactData.email}
               onChange={(e) => handleInputChange('email', e.target.value)}
               readOnly={!isEditing}
-              className={`w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all ${!isEditing ? 'bg-gray-50 cursor-not-allowed' : ''}`}
+              className={`w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all bg-white dark:bg-gray-700 text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-50 dark:bg-gray-800 cursor-not-allowed opacity-75' : ''}`}
               placeholder="info@example.com"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               <div className="flex items-center gap-2">
-                <Phone className="w-4 h-4 text-gray-500" />
+                <Phone className="w-4 h-4 text-gray-500 dark:text-gray-400" />
                 Phone Number
               </div>
             </label>
@@ -168,15 +169,15 @@ export function ContactSection() {
               value={contactData.phone}
               onChange={(e) => handleInputChange('phone', e.target.value)}
               readOnly={!isEditing}
-              className={`w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all ${!isEditing ? 'bg-gray-50 cursor-not-allowed' : ''}`}
+              className={`w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all bg-white dark:bg-gray-700 text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-50 dark:bg-gray-800 cursor-not-allowed opacity-75' : ''}`}
               placeholder="+1 234 567 890"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               <div className="flex items-center gap-2">
-                <MapPin className="w-4 h-4 text-gray-500" />
+                <MapPin className="w-4 h-4 text-gray-500 dark:text-gray-400" />
                 Address
               </div>
             </label>
@@ -185,15 +186,15 @@ export function ContactSection() {
               onChange={(e) => handleInputChange('address', e.target.value)}
               readOnly={!isEditing}
               rows={3}
-              className={`w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all resize-none ${!isEditing ? 'bg-gray-50 cursor-not-allowed' : ''}`}
+              className={`w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all resize-none bg-white dark:bg-gray-700 text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-50 dark:bg-gray-800 cursor-not-allowed opacity-75' : ''}`}
               placeholder="123 Street Name, City, Country"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               <div className="flex items-center gap-2">
-                <Globe className="w-4 h-4 text-gray-500" />
+                <Globe className="w-4 h-4 text-gray-500 dark:text-gray-400" />
                 Google Maps Embed URL
               </div>
             </label>
@@ -202,7 +203,7 @@ export function ContactSection() {
               value={contactData.googleMap}
               onChange={(e) => handleInputChange('googleMap', e.target.value)}
               readOnly={!isEditing}
-              className={`w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all ${!isEditing ? 'bg-gray-50 cursor-not-allowed' : ''}`}
+              className={`w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all bg-white dark:bg-gray-700 text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-50 dark:bg-gray-800 cursor-not-allowed opacity-75' : ''}`}
               placeholder="https://maps.google.com/..."
             />
           </div>
@@ -210,45 +211,45 @@ export function ContactSection() {
       </div>
 
       {/* Social Media */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
         <div className="flex items-center gap-2 mb-5">
-          <Globe className="w-5 h-5 text-green-600" />
-          <h3 className="text-lg font-semibold text-gray-900">Social Media Links</h3>
+          <Globe className="w-5 h-5 text-green-600 dark:text-green-500" />
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Social Media Links</h3>
         </div>
 
         <div className="space-y-5">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Facebook URL</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Facebook URL</label>
             <input
               type="url"
               value={contactData.socials.facebook}
               onChange={(e) => handleSocialChange('facebook', e.target.value)}
               readOnly={!isEditing}
-              className={`w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all ${!isEditing ? 'bg-gray-50 cursor-not-allowed' : ''}`}
+              className={`w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all bg-white dark:bg-gray-700 text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-50 dark:bg-gray-800 cursor-not-allowed opacity-75' : ''}`}
               placeholder="https://facebook.com/yourpage"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Instagram URL</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Instagram URL</label>
             <input
               type="url"
               value={contactData.socials.instagram}
               onChange={(e) => handleSocialChange('instagram', e.target.value)}
               readOnly={!isEditing}
-              className={`w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all ${!isEditing ? 'bg-gray-50 cursor-not-allowed' : ''}`}
+              className={`w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all bg-white dark:bg-gray-700 text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-50 dark:bg-gray-800 cursor-not-allowed opacity-75' : ''}`}
               placeholder="https://instagram.com/yourprofile"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Twitter URL</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Twitter URL</label>
             <input
               type="url"
               value={contactData.socials.twitter}
               onChange={(e) => handleSocialChange('twitter', e.target.value)}
               readOnly={!isEditing}
-              className={`w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all ${!isEditing ? 'bg-gray-50 cursor-not-allowed' : ''}`}
+              className={`w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all bg-white dark:bg-gray-700 text-gray-900 dark:text-white ${!isEditing ? 'bg-gray-50 dark:bg-gray-800 cursor-not-allowed opacity-75' : ''}`}
               placeholder="https://twitter.com/yourhandle"
             />
           </div>

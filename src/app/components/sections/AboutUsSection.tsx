@@ -1,22 +1,25 @@
 import { useState, useEffect } from 'react';
-import { Info, TrendingUp, Calendar, Heart, Users, Plus, Trash2, Save, Loader2, AlertCircle, Image } from 'lucide-react';
+import { Info, TrendingUp, Calendar, Heart, Users, Plus, Trash2, Save, Loader2, Image, Edit, X } from 'lucide-react';
+import { toast } from 'sonner';
 import {
   fetchAboutUsData,
-  createAboutUsData,
-  updateAboutUsData,
   AboutUsData,
   AboutUsStats,
   Milestone,
   Value,
   TeamMember
 } from '../../../services/aboutUsApi';
+import { ImageUploadInput } from '../ui/ImageUploadInput';
+import { deleteFromCloudinary } from '../../../services/deleteApi';
+
+const BASE_URL = import.meta.env.VITE_BASE_URL || 'https://nature-escape-web-back.vercel.app';
 
 export function AboutUsSection() {
   const [aboutUsData, setAboutUsData] = useState<AboutUsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [originalData, setOriginalData] = useState<AboutUsData | null>(null);
 
   // Form state
   const [hero, setHero] = useState({
@@ -24,7 +27,6 @@ export function AboutUsSection() {
     heroTitle: '',
     heroDescription: ''
   });
-  const [heroBackgroundFile, setHeroBackgroundFile] = useState<File | null>(null);
   const [stats, setStats] = useState<AboutUsStats>({
     yearExperience: 0,
     happyTravelers: 0,
@@ -34,19 +36,42 @@ export function AboutUsSection() {
   const [milestones, setMilestones] = useState<Milestone[]>([]);
   const [values, setValues] = useState<Value[]>([]);
   const [team, setTeam] = useState<TeamMember[]>([]);
-  const [teamImages, setTeamImages] = useState<{ [key: number]: File | null }>({});
 
   useEffect(() => {
     loadAboutUsData();
   }, []);
 
+  const handleDeleteImage = async (url: string) => {
+    if (url && url.includes('cloudinary')) {
+      try {
+        await deleteFromCloudinary(url);
+      } catch (error) {
+        console.error('Failed to delete image:', error);
+      }
+    }
+  };
+
+  const handleHeroImageUpdate = (url: string) => {
+    const oldUrl = hero.heroBackground;
+    if (oldUrl && oldUrl !== url) handleDeleteImage(oldUrl);
+    setHero(prev => ({ ...prev, heroBackground: url }));
+  };
+
+  const handleTeamImageUpdate = (index: number, url: string) => {
+    const updated = [...team];
+    const oldUrl = updated[index].image;
+    if (oldUrl && oldUrl !== url) handleDeleteImage(oldUrl);
+    updated[index] = { ...updated[index], image: url };
+    setTeam(updated);
+  };
+
   const loadAboutUsData = async () => {
     try {
       setLoading(true);
-      setError(null);
       const data = await fetchAboutUsData();
       if (data) {
         setAboutUsData(data);
+        setOriginalData(data);
         setHero(data.hero || { heroBackground: '', heroTitle: '', heroDescription: '' });
         setStats(data.stats);
         setMilestones(data.milestones || []);
@@ -62,20 +87,28 @@ export function AboutUsSection() {
     }
   };
 
+  const handleCancel = () => {
+    if (originalData) {
+      setAboutUsData(originalData);
+      setHero(originalData.hero || { heroBackground: '', heroTitle: '', heroDescription: '' });
+      setStats(originalData.stats);
+      setMilestones(originalData.milestones || []);
+      setValues(originalData.values || []);
+      setTeam(originalData.team || []);
+    }
+    setIsEditing(false);
+  };
+
   const handleSave = async () => {
     try {
       setSaving(true);
-      setError(null);
-      setSuccess(null);
 
       const formData = new FormData();
 
       // Add hero data
       formData.append('hero[heroTitle]', hero.heroTitle);
       formData.append('hero[heroDescription]', hero.heroDescription);
-      if (heroBackgroundFile) {
-        formData.append('hero[heroBackground]', heroBackgroundFile);
-      } else if (hero.heroBackground) {
+      if (hero.heroBackground) {
         formData.append('hero[heroBackground]', hero.heroBackground);
       }
 
@@ -105,39 +138,46 @@ export function AboutUsSection() {
         formData.append(`team[${index}][name]`, member.name);
         formData.append(`team[${index}][role]`, member.role);
         formData.append(`team[${index}][bio]`, member.bio);
-        if (member.image && !teamImages[index]) {
+        if (member.image) {
           formData.append(`team[${index}][image]`, member.image);
         }
       });
 
-      // Add team images
-      Object.entries(teamImages).forEach(([index, file]) => {
-        if (file) {
-          formData.append(`team[${index}][image]`, file);
-        }
-      });
-
+      let response;
       let result;
-      let isUpdate = false;
 
       if (aboutUsData?._id) {
         // Update existing data
-        isUpdate = true;
-        result = await updateAboutUsData(aboutUsData._id, formData);
+        response = await fetch(`${BASE_URL}/api/aboutus/${aboutUsData._id}`, {
+          method: 'PUT',
+          body: formData,
+          credentials: 'include'
+        });
       } else {
         // Create new data
-        result = await createAboutUsData(formData);
+        response = await fetch(`${BASE_URL}/api/aboutus/setData`, {
+          method: 'POST',
+          body: formData,
+          credentials: 'include'
+        });
       }
 
-      setAboutUsData(result);
-      setSuccess(isUpdate ? 'About Us data updated successfully!' : 'About Us data created successfully!');
-      setHeroBackgroundFile(null);
-      setTeamImages({});
+      result = await response.json();
 
-      setTimeout(() => setSuccess(null), 3000);
+      if (!response.ok) {
+        throw new Error(result.message || 'Failed to save about us data');
+      }
+
+      const newData = result.data;
+      setAboutUsData(newData);
+      setOriginalData(newData);
+
+      setIsEditing(false);
+      toast.success(result.message || (aboutUsData?._id ? 'Updated successfully!' : 'Created successfully!'));
+
     } catch (err) {
-      setError('Failed to save about us data');
       console.error(err);
+      toast.error(err instanceof Error ? err.message : 'Failed to save data');
     } finally {
       setSaving(false);
     }
@@ -184,15 +224,8 @@ export function AboutUsSection() {
     setTeam(updated);
   };
 
-  const handleTeamImageChange = (index: number, file: File | null) => {
-    setTeamImages({ ...teamImages, [index]: file });
-  };
-
   const removeTeamMember = (index: number) => {
     setTeam(team.filter((_, i) => i !== index));
-    const newImages = { ...teamImages };
-    delete newImages[index];
-    setTeamImages(newImages);
   };
 
   if (loading) {
@@ -212,38 +245,43 @@ export function AboutUsSection() {
           <Info className="w-5 h-5 text-green-600" />
           <h3 className="text-lg font-semibold text-gray-900">About Us Content</h3>
         </div>
-        <button
-          onClick={handleSave}
-          disabled={saving}
-          className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {saving ? (
-            <>
-              <Loader2 className="w-4 h-4 animate-spin" />
-              Saving...
-            </>
-          ) : (
-            <>
-              <Save className="w-4 h-4" />
-              Save Changes
-            </>
+        <div className="flex gap-2">
+          {isEditing && (
+            <button
+              onClick={handleCancel}
+              disabled={saving}
+              className="flex items-center gap-2 px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 disabled:opacity-50 transition-all"
+            >
+              <X className="w-4 h-4" />
+              Cancel
+            </button>
           )}
-        </button>
+          <button
+            onClick={isEditing ? handleSave : () => setIsEditing(true)}
+            disabled={saving}
+            className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {saving ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                Saving...
+              </>
+            ) : isEditing ? (
+              <>
+                <Save className="w-4 h-4" />
+                Save Changes
+              </>
+            ) : (
+              <>
+                <Edit className="w-4 h-4" />
+                Edit
+              </>
+            )}
+          </button>
+        </div>
       </div>
 
-      {error && (
-        <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2 text-red-700">
-          <AlertCircle className="w-5 h-5" />
-          {error}
-        </div>
-      )}
 
-      {success && (
-        <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg flex items-center gap-2 text-green-700">
-          <Info className="w-5 h-5" />
-          {success}
-        </div>
-      )}
 
       <div className="space-y-8">
         {/* Hero Section */}
@@ -259,7 +297,8 @@ export function AboutUsSection() {
                 type="text"
                 value={hero.heroTitle}
                 onChange={(e) => setHero({ ...hero, heroTitle: e.target.value })}
-                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+                readOnly={!isEditing}
+                className={`w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all ${!isEditing ? 'bg-gray-50 cursor-not-allowed' : ''}`}
                 placeholder="We Create Unforgettable Journeys"
               />
             </div>
@@ -269,25 +308,25 @@ export function AboutUsSection() {
                 value={hero.heroDescription}
                 onChange={(e) => setHero({ ...hero, heroDescription: e.target.value })}
                 rows={3}
-                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all resize-none"
+                readOnly={!isEditing}
+                className={`w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all resize-none ${!isEditing ? 'bg-gray-50 cursor-not-allowed' : ''}`}
                 placeholder="Discover the world with us and create memories that last a lifetime..."
               />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Hero Background Image</label>
               <div className="space-y-2">
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => setHeroBackgroundFile(e.target.files?.[0] || null)}
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+                <ImageUploadInput
+                  value={hero.heroBackground}
+                  onChange={handleHeroImageUpdate}
+                  disabled={!isEditing}
+                  placeholder="Hero Background URL"
                 />
-                {(heroBackgroundFile || hero.heroBackground) && (
-                  <div className="relative w-full h-48 rounded-lg overflow-hidden border border-gray-300">
+                {hero.heroBackground && (
+                  <div className="image-preview-wide mt-2">
                     <img
-                      src={heroBackgroundFile ? URL.createObjectURL(heroBackgroundFile) : hero.heroBackground}
+                      src={hero.heroBackground}
                       alt="Hero background preview"
-                      className="w-full h-full object-cover"
                     />
                   </div>
                 )}
@@ -309,7 +348,8 @@ export function AboutUsSection() {
                 type="number"
                 value={stats.yearExperience}
                 onChange={(e) => setStats({ ...stats, yearExperience: parseInt(e.target.value) || 0 })}
-                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+                readOnly={!isEditing}
+                className={`w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all ${!isEditing ? 'bg-gray-50 cursor-not-allowed' : ''}`}
                 placeholder="10"
               />
             </div>
@@ -319,7 +359,8 @@ export function AboutUsSection() {
                 type="number"
                 value={stats.happyTravelers}
                 onChange={(e) => setStats({ ...stats, happyTravelers: parseInt(e.target.value) || 0 })}
-                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+                readOnly={!isEditing}
+                className={`w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all ${!isEditing ? 'bg-gray-50 cursor-not-allowed' : ''}`}
                 placeholder="5000"
               />
             </div>
@@ -329,7 +370,8 @@ export function AboutUsSection() {
                 type="number"
                 value={stats.toursCompleted}
                 onChange={(e) => setStats({ ...stats, toursCompleted: parseInt(e.target.value) || 0 })}
-                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+                readOnly={!isEditing}
+                className={`w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all ${!isEditing ? 'bg-gray-50 cursor-not-allowed' : ''}`}
                 placeholder="1000"
               />
             </div>
@@ -339,7 +381,8 @@ export function AboutUsSection() {
                 type="number"
                 value={stats.destination}
                 onChange={(e) => setStats({ ...stats, destination: parseInt(e.target.value) || 0 })}
-                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+                readOnly={!isEditing}
+                className={`w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all ${!isEditing ? 'bg-gray-50 cursor-not-allowed' : ''}`}
                 placeholder="50"
               />
             </div>
@@ -353,13 +396,15 @@ export function AboutUsSection() {
               <Calendar className="w-5 h-5 text-green-600" />
               <h4 className="text-md font-semibold text-gray-900">Milestones</h4>
             </div>
-            <button
-              onClick={addMilestone}
-              className="flex items-center gap-2 px-3 py-1.5 text-sm bg-green-50 text-green-600 rounded-lg hover:bg-green-100 transition-colors"
-            >
-              <Plus className="w-4 h-4" />
-              Add Milestone
-            </button>
+            {isEditing && (
+              <button
+                onClick={addMilestone}
+                className="flex items-center gap-2 px-3 py-1.5 text-sm bg-green-50 text-green-600 rounded-lg hover:bg-green-100 transition-colors"
+              >
+                <Plus className="w-4 h-4" />
+                Add Milestone
+              </button>
+            )}
           </div>
           <div className="space-y-4">
             {milestones.map((milestone, index) => (
@@ -372,7 +417,8 @@ export function AboutUsSection() {
                         type="number"
                         value={milestone.year}
                         onChange={(e) => updateMilestone(index, 'year', parseInt(e.target.value) || 0)}
-                        className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+                        readOnly={!isEditing}
+                        className={`w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all ${!isEditing ? 'bg-gray-50 cursor-not-allowed' : ''}`}
                         placeholder="2020"
                       />
                     </div>
@@ -382,7 +428,8 @@ export function AboutUsSection() {
                         type="text"
                         value={milestone.event}
                         onChange={(e) => updateMilestone(index, 'event', e.target.value)}
-                        className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+                        readOnly={!isEditing}
+                        className={`w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all ${!isEditing ? 'bg-gray-50 cursor-not-allowed' : ''}`}
                         placeholder="Company Founded"
                       />
                     </div>
@@ -392,17 +439,20 @@ export function AboutUsSection() {
                         type="text"
                         value={milestone.mstone_description}
                         onChange={(e) => updateMilestone(index, 'mstone_description', e.target.value)}
-                        className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+                        readOnly={!isEditing}
+                        className={`w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all ${!isEditing ? 'bg-gray-50 cursor-not-allowed' : ''}`}
                         placeholder="Started our journey..."
                       />
                     </div>
                   </div>
-                  <button
-                    onClick={() => removeMilestone(index)}
-                    className="mt-8 p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
+                  {isEditing && (
+                    <button
+                      onClick={() => removeMilestone(index)}
+                      className="mt-8 p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  )}
                 </div>
               </div>
             ))}
@@ -419,13 +469,15 @@ export function AboutUsSection() {
               <Heart className="w-5 h-5 text-green-600" />
               <h4 className="text-md font-semibold text-gray-900">Our Values</h4>
             </div>
-            <button
-              onClick={addValue}
-              className="flex items-center gap-2 px-3 py-1.5 text-sm bg-green-50 text-green-600 rounded-lg hover:bg-green-100 transition-colors"
-            >
-              <Plus className="w-4 h-4" />
-              Add Value
-            </button>
+            {isEditing && (
+              <button
+                onClick={addValue}
+                className="flex items-center gap-2 px-3 py-1.5 text-sm bg-green-50 text-green-600 rounded-lg hover:bg-green-100 transition-colors"
+              >
+                <Plus className="w-4 h-4" />
+                Add Value
+              </button>
+            )}
           </div>
           <div className="space-y-4">
             {values.map((value, index) => (
@@ -438,7 +490,8 @@ export function AboutUsSection() {
                         type="text"
                         value={value.icon}
                         onChange={(e) => updateValue(index, 'icon', e.target.value)}
-                        className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+                        readOnly={!isEditing}
+                        className={`w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all ${!isEditing ? 'bg-gray-50 cursor-not-allowed' : ''}`}
                         placeholder="Heart"
                       />
                     </div>
@@ -448,7 +501,8 @@ export function AboutUsSection() {
                         type="text"
                         value={value.title}
                         onChange={(e) => updateValue(index, 'title', e.target.value)}
-                        className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+                        readOnly={!isEditing}
+                        className={`w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all ${!isEditing ? 'bg-gray-50 cursor-not-allowed' : ''}`}
                         placeholder="Customer First"
                       />
                     </div>
@@ -458,7 +512,8 @@ export function AboutUsSection() {
                         value={value.description}
                         onChange={(e) => updateValue(index, 'description', e.target.value)}
                         rows={2}
-                        className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all resize-none"
+                        readOnly={!isEditing}
+                        className={`w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all resize-none ${!isEditing ? 'bg-gray-50 cursor-not-allowed' : ''}`}
                         placeholder="We prioritize our customers..."
                       />
                     </div>
@@ -469,24 +524,28 @@ export function AboutUsSection() {
                           type="color"
                           value={value.color}
                           onChange={(e) => updateValue(index, 'color', e.target.value)}
-                          className="h-11 w-16 border border-gray-300 rounded-lg cursor-pointer"
+                          disabled={!isEditing}
+                          className={`h-11 w-16 border border-gray-300 rounded-lg ${isEditing ? 'cursor-pointer' : 'cursor-not-allowed bg-gray-50'}`}
                         />
                         <input
                           type="text"
                           value={value.color}
                           onChange={(e) => updateValue(index, 'color', e.target.value)}
-                          className="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+                          readOnly={!isEditing}
+                          className={`flex-1 px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all ${!isEditing ? 'bg-gray-50 cursor-not-allowed' : ''}`}
                           placeholder="#16a34a"
                         />
                       </div>
                     </div>
                   </div>
-                  <button
-                    onClick={() => removeValue(index)}
-                    className="mt-8 p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
+                  {isEditing && (
+                    <button
+                      onClick={() => removeValue(index)}
+                      className="mt-8 p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  )}
                 </div>
               </div>
             ))}
@@ -503,13 +562,15 @@ export function AboutUsSection() {
               <Users className="w-5 h-5 text-green-600" />
               <h4 className="text-md font-semibold text-gray-900">Team Members</h4>
             </div>
-            <button
-              onClick={addTeamMember}
-              className="flex items-center gap-2 px-3 py-1.5 text-sm bg-green-50 text-green-600 rounded-lg hover:bg-green-100 transition-colors"
-            >
-              <Plus className="w-4 h-4" />
-              Add Team Member
-            </button>
+            {isEditing && (
+              <button
+                onClick={addTeamMember}
+                className="flex items-center gap-2 px-3 py-1.5 text-sm bg-green-50 text-green-600 rounded-lg hover:bg-green-100 transition-colors"
+              >
+                <Plus className="w-4 h-4" />
+                Add Team Member
+              </button>
+            )}
           </div>
           <div className="space-y-4">
             {team.map((member, index) => (
@@ -523,7 +584,8 @@ export function AboutUsSection() {
                           type="text"
                           value={member.name}
                           onChange={(e) => updateTeamMember(index, 'name', e.target.value)}
-                          className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+                          readOnly={!isEditing}
+                          className={`w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all ${!isEditing ? 'bg-gray-50 cursor-not-allowed' : ''}`}
                           placeholder="John Doe"
                         />
                       </div>
@@ -533,7 +595,8 @@ export function AboutUsSection() {
                           type="text"
                           value={member.role}
                           onChange={(e) => updateTeamMember(index, 'role', e.target.value)}
-                          className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+                          readOnly={!isEditing}
+                          className={`w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all ${!isEditing ? 'bg-gray-50 cursor-not-allowed' : ''}`}
                           placeholder="CEO & Founder"
                         />
                       </div>
@@ -544,37 +607,39 @@ export function AboutUsSection() {
                         value={member.bio}
                         onChange={(e) => updateTeamMember(index, 'bio', e.target.value)}
                         rows={2}
-                        className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all resize-none"
+                        readOnly={!isEditing}
+                        className={`w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all resize-none ${!isEditing ? 'bg-gray-50 cursor-not-allowed' : ''}`}
                         placeholder="Brief bio about the team member..."
                       />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">Profile Image</label>
                       <div className="flex items-center gap-4">
-                        <input
-                          type="file"
-                          accept="image/*"
-                          onChange={(e) => handleTeamImageChange(index, e.target.files?.[0] || null)}
-                          className="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+                        <ImageUploadInput
+                          value={member.image}
+                          onChange={(url) => handleTeamImageUpdate(index, url)}
+                          disabled={!isEditing}
+                          placeholder="Team Member Image URL"
                         />
-                        {(member.image || teamImages[index]) && (
-                          <div className="w-16 h-16 rounded-lg overflow-hidden border border-gray-300">
+                        {member.image && (
+                          <div className="image-preview-square">
                             <img
-                              src={teamImages[index] ? URL.createObjectURL(teamImages[index]!) : member.image}
+                              src={member.image}
                               alt={member.name}
-                              className="w-full h-full object-cover"
                             />
                           </div>
                         )}
                       </div>
                     </div>
                   </div>
-                  <button
-                    onClick={() => removeTeamMember(index)}
-                    className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
+                  {isEditing && (
+                    <button
+                      onClick={() => removeTeamMember(index)}
+                      className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  )}
                 </div>
               </div>
             ))}

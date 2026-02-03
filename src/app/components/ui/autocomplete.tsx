@@ -8,6 +8,7 @@ interface AutocompleteProps {
     placeholder?: string;
     className?: string;
     id?: string;
+    readOnly?: boolean;
 }
 
 export function Autocomplete({
@@ -16,14 +17,16 @@ export function Autocomplete({
     onChange,
     placeholder,
     className,
-    id
+    id,
+    readOnly = false
 }: AutocompleteProps) {
     const [showSuggestions, setShowSuggestions] = useState(false);
     const wrapperRef = useRef<HTMLDivElement>(null);
 
     // Filter options based on start of string, case insensitive
-    const filteredOptions = options.filter(option =>
-        option.toLowerCase().startsWith(value.toLowerCase())
+    const safeValue = (value || '').toString();
+    const filteredOptions = (options || []).filter(option =>
+        typeof option === 'string' && option.toLowerCase().startsWith(safeValue.toLowerCase())
     );
 
     useEffect(() => {
@@ -49,8 +52,9 @@ export function Autocomplete({
                 placeholder={placeholder}
                 className={className}
                 autoComplete="off"
+                readOnly={readOnly}
             />
-            {showSuggestions && value && filteredOptions.length > 0 && (
+            {!readOnly && showSuggestions && value && filteredOptions.length > 0 && (
                 <ul className="absolute z-50 w-full bg-white border border-gray-200 rounded-md shadow-lg mt-1 max-h-60 overflow-auto">
                     {filteredOptions.map((option) => (
                         <li

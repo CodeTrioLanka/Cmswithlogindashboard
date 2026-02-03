@@ -40,7 +40,8 @@ export const addExcursion = async (data: ExcursionData) => {
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ data: JSON.stringify(data) }),
+            body: JSON.stringify(data),
+            credentials: 'include'
         });
 
         if (!response.ok) {
@@ -61,7 +62,8 @@ export const updateExcursion = async (id: string, data: ExcursionData) => {
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ data: JSON.stringify(data) }),
+            body: JSON.stringify(data),
+            credentials: 'include'
         });
 
         if (!response.ok) {
@@ -79,6 +81,7 @@ export const deleteExcursion = async (id: string) => {
     try {
         const response = await fetch(`${BASE_URL}/api/excursion/${id}`, {
             method: 'DELETE',
+            credentials: 'include'
         });
 
         if (!response.ok) {
