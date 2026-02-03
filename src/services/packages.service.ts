@@ -90,7 +90,8 @@ class PackagesService {
         const response = await fetch(`${API_BASE_URL}/packages`, {
             method: 'POST',
             headers: this.getMultiPartHeaders(),
-            body: formData
+            body: formData,
+            credentials: 'include'
         });
 
         if (!response.ok) {
@@ -109,7 +110,8 @@ class PackagesService {
         const response = await fetch(`${API_BASE_URL}/packages/${id}`, {
             method: 'PUT',
             headers: this.getMultiPartHeaders(),
-            body: formData
+            body: formData,
+            credentials: 'include'
         });
 
         if (!response.ok) {
@@ -122,7 +124,8 @@ class PackagesService {
     async deletePackage(id: string): Promise<any> {
         const response = await fetch(`${API_BASE_URL}/packages/${id}`, {
             method: 'DELETE',
-            headers: this.getAuthHeaders()
+            headers: this.getAuthHeaders(),
+            credentials: 'include'
         });
         if (!response.ok) throw new Error('Failed to delete package');
         return response.json();

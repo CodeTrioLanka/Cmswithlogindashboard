@@ -111,7 +111,8 @@ class ReviewsService {
         const url = `${API_BASE_URL}/reviews/all${queryString ? `?${queryString}` : ''}`;
 
         const response = await fetch(url, {
-            headers: this.getAuthHeaders()
+            headers: this.getAuthHeaders(),
+            credentials: 'include'
         });
 
         if (!response.ok) {
@@ -150,7 +151,8 @@ class ReviewsService {
         const response = await fetch(`${API_BASE_URL}/reviews/admin`, {
             method: 'POST',
             headers: this.getAuthHeaders(),
-            body: JSON.stringify(reviewData)
+            body: JSON.stringify(reviewData),
+            credentials: 'include'
         });
 
         if (!response.ok) {
@@ -175,7 +177,8 @@ class ReviewsService {
         const response = await fetch(`${API_BASE_URL}/reviews/${id}`, {
             method: 'PUT',
             headers: this.getAuthHeaders(),
-            body: JSON.stringify(reviewData)
+            body: JSON.stringify(reviewData),
+            credentials: 'include'
         });
 
         if (!response.ok) {
@@ -192,7 +195,8 @@ class ReviewsService {
     async deleteReview(id: string): Promise<DeleteResponse> {
         const response = await fetch(`${API_BASE_URL}/reviews/${id}`, {
             method: 'DELETE',
-            headers: this.getAuthHeaders()
+            headers: this.getAuthHeaders(),
+            credentials: 'include'
         });
 
         if (!response.ok) {
@@ -209,7 +213,8 @@ class ReviewsService {
     async approveReview(id: string): Promise<SingleReviewResponse> {
         const response = await fetch(`${API_BASE_URL}/reviews/${id}/approve`, {
             method: 'PATCH',
-            headers: this.getAuthHeaders()
+            headers: this.getAuthHeaders(),
+            credentials: 'include'
         });
 
         if (!response.ok) {
@@ -227,7 +232,8 @@ class ReviewsService {
         const response = await fetch(`${API_BASE_URL}/reviews/${id}/visibility`, {
             method: 'PATCH',
             headers: this.getAuthHeaders(),
-            body: JSON.stringify({ isVisible })
+            body: JSON.stringify({ isVisible }),
+            credentials: 'include'
         });
 
         if (!response.ok) {
@@ -243,7 +249,8 @@ class ReviewsService {
      */
     async syncGoogleReviews(): Promise<GoogleSyncResponse> {
         const response = await fetch(`${API_BASE_URL}/reviews/google/sync`, {
-            headers: this.getAuthHeaders()
+            headers: this.getAuthHeaders(),
+            credentials: 'include'
         });
 
         if (!response.ok) {

@@ -100,56 +100,57 @@ export interface CMSData {
 
 export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isValidating, setIsValidating] = useState(true);
   const [user, setUser] = useState<{ id: string; email: string; role: string } | null>(null);
-  const [cmsData, setCmsData] = useState<CMSData>({
-    home: {
-      title: 'Discover Your Next Adventure',
-      subtitle: 'Explore the world with our expert travel guides',
-      year_of_exp: 15,
-      expert_Team_members: 50,
-      total_tours: 1200,
-      happy_travelers: 25000,
-      gallery: [],
-      homebg: '',
-      destinationImage: '',
-      personalizedImage: ''
-    },
-    aboutUs: {
-      title: 'About Our Company',
-      description: 'We are a leading travel company with years of experience',
-      mission: 'To provide unforgettable travel experiences',
-      vision: 'To be the world\'s most trusted travel partner',
-      image: ''
-    },
-    tours: [],
-    excursions: [],
-    thingsToDo: null, // Initial state
-    services: [],
-    reviews: [],
-    contact: {
-      email: 'info@example.com',
-      phone: '+1 234 567 890',
-      address: '123 Travel Street, City, Country',
-      mapUrl: '',
-      socialMedia: {
-        facebook: '',
-        instagram: '',
-        twitter: ''
-      }
-    }
-  });
+
+
 
   useEffect(() => {
-    const savedUser = localStorage.getItem('user');
-    if (savedUser) {
+    const validateSession = async () => {
+      setIsValidating(true);
       try {
-        const userData = JSON.parse(savedUser);
-        setUser(userData);
-        setIsLoggedIn(true);
+        const BASE_URL = import.meta.env.VITE_BASE_URL || 'https://nature-escape-web-back.vercel.app';
+        const response = await fetch(`${BASE_URL}/api/auth/me`, {
+          method: 'GET',
+          credentials: 'include', // Important: sends cookies
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          if (data.user && data.user.id) {
+            // Valid session with JWT token
+            const userData = {
+              id: data.user.id,
+              email: data.user.email || '',
+              role: data.user.role || 'user'
+            };
+            setUser(userData);
+            setIsLoggedIn(true);
+            // Update localStorage for consistency
+            localStorage.setItem('user', JSON.stringify(userData));
+          } else {
+            // Invalid session
+            localStorage.removeItem('user');
+            setIsLoggedIn(false);
+            setUser(null);
+          }
+        } else {
+          // No valid session
+          localStorage.removeItem('user');
+          setIsLoggedIn(false);
+          setUser(null);
+        }
       } catch (error) {
+        console.error('Session validation error:', error);
         localStorage.removeItem('user');
+        setIsLoggedIn(false);
+        setUser(null);
+      } finally {
+        setIsValidating(false);
       }
-    }
+    };
+
+    validateSession();
   }, []);
 
   const handleLogin = (userData: { id: string; email: string; role: string }) => {
@@ -157,25 +158,40 @@ export default function App() {
     setIsLoggedIn(true);
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem('user');
-    setUser(null);
-    setIsLoggedIn(false);
+
+  const handleLogout = async () => {
+    try {
+      const BASE_URL = import.meta.env.VITE_BASE_URL || 'https://nature-escape-web-back.vercel.app';
+      await fetch(`${BASE_URL}/api/auth/logout`, {
+        method: 'POST',
+        credentials: 'include',
+      });
+    } catch (error) {
+      console.error('Logout error:', error);
+    } finally {
+      // Always clear local state even if API call fails
+      localStorage.removeItem('user');
+      setUser(null);
+      setIsLoggedIn(false);
+    }
   };
 
-  const handleUpdateData = (data: CMSData) => {
-    setCmsData(data);
-  };
+
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <Toaster position="top-right" richColors />
-      {!isLoggedIn ? (
+      {isValidating ? (
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="text-center">
+            <div className="w-16 h-16 border-4 border-green-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+            <p className="text-gray-600 dark:text-gray-400">Validating session...</p>
+          </div>
+        </div>
+      ) : !isLoggedIn ? (
         <Login onLogin={handleLogin} />
       ) : (
         <Dashboard
-          cmsData={cmsData}
-          onUpdate={handleUpdateData}
           onLogout={handleLogout}
           user={user || undefined}
         />

@@ -157,6 +157,7 @@ export function HomeSection() {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify(dataToSend),
+          credentials: 'include'
         });
         result = await response.json();
         if (!response.ok) throw new Error(result.message || 'Failed to update');
@@ -169,6 +170,7 @@ export function HomeSection() {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify(dataToSend),
+          credentials: 'include'
         });
         result = await response.json();
         if (!response.ok) throw new Error(result.message || 'Failed to create');
@@ -265,18 +267,20 @@ export function HomeSection() {
             {homeData.homebg && (
               <div className="mt-2">
                 {homeData.homebg.includes('/video/upload/') || homeData.homebg.endsWith('.mp4') || homeData.homebg.endsWith('.webm') || homeData.homebg.endsWith('.mov') ? (
-                  <video
-                    src={homeData.homebg}
-                    className="w-64 h-auto rounded border"
-                    controls
-                    muted
-                  />
+                  <div className="video-preview-container">
+                    <video
+                      src={homeData.homebg}
+                      controls
+                      muted
+                    />
+                  </div>
                 ) : (
-                  <img
-                    src={homeData.homebg}
-                    alt="Background preview"
-                    className="w-32 h-auto rounded border"
-                  />
+                  <div className="image-preview-large">
+                    <img
+                      src={homeData.homebg}
+                      alt="Background preview"
+                    />
+                  </div>
                 )}
               </div>
             )}
@@ -380,11 +384,12 @@ export function HomeSection() {
               placeholder="Image URL"
             />
             {homeData.destinationImage && (
-              <img
-                src={homeData.destinationImage}
-                alt="Destination preview"
-                className="w-full h-auto rounded border mt-2"
-              />
+              <div className="image-preview-medium mt-2">
+                <img
+                  src={homeData.destinationImage}
+                  alt="Destination preview"
+                />
+              </div>
             )}
           </div>
           <div>
@@ -398,11 +403,12 @@ export function HomeSection() {
               placeholder="Image URL"
             />
             {homeData.personalizedImage && (
-              <img
-                src={homeData.personalizedImage}
-                alt="Personalized preview"
-                className="w-full h-auto rounded border mt-2"
-              />
+              <div className="image-preview-medium mt-2">
+                <img
+                  src={homeData.personalizedImage}
+                  alt="Personalized preview"
+                />
+              </div>
             )}
           </div>
         </div>
@@ -432,11 +438,12 @@ export function HomeSection() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {homeData.gallery.map((image, index) => (
             <div key={index} className="relative group">
-              <img
-                src={image}
-                alt={`Gallery ${index + 1}`}
-                className="w-full h-32 object-cover rounded border"
-              />
+              <div className="image-preview-medium mx-auto">
+                <img
+                  src={image}
+                  alt={`Gallery ${index + 1}`}
+                />
+              </div>
               {isEditing && (
                 <button
                   onClick={async () => {
@@ -449,14 +456,11 @@ export function HomeSection() {
                       await deleteFromCloudinary(imageToDelete);
                     }
                   }}
-                  className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                  className="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white rounded-full p-1 transition-all z-10 opacity-0 group-hover:opacity-100"
                 >
-                  <X className="w-3 h-3" />
+                  <X className="w-4 h-4" />
                 </button>
               )}
-              <div className="absolute bottom-2 left-2 bg-black bg-opacity-50 text-white text-xs px-2 py-1 rounded">
-                {image}
-              </div>
             </div>
           ))}
         </div>

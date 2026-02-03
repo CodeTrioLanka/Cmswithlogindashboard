@@ -1,0 +1,16 @@
+/* Gallery images - standardized size */
+.gallery-image-container {
+    position: relative;
+    width: 100%;
+}
+
+.gallery-image-container .image-preview-medium {
+    width: 100%;
+    height: 180px;
+}
+
+.gallery-image-container .image-preview-medium img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}

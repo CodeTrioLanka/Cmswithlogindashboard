@@ -1,0 +1,219 @@
+/* Standardized Image Preview Sizes for CMS */
+
+/* Default image preview container */
+.image-preview-container {
+    width: 100%;
+    max-width: 300px;
+    height: 200px;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 2px solid #e5e7eb;
+    background-color: #f9fafb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.dark .image-preview-container {
+    border-color: #4b5563;
+    background-color: #374151;
+}
+
+/* Image preview - object-cover ensures consistent sizing */
+.image-preview-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+}
+
+/* Small preview (for thumbnails, icons) */
+.image-preview-small {
+    width: 120px;
+    height: 120px;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 2px solid #e5e7eb;
+    background-color: #f9fafb;
+}
+
+.dark .image-preview-small {
+    border-color: #4b5563;
+    background-color: #374151;
+}
+
+.image-preview-small img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+}
+
+/* Medium preview (standard for most sections) */
+.image-preview-medium {
+    width: 250px;
+    height: 180px;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 2px solid #e5e7eb;
+    background-color: #f9fafb;
+}
+
+.dark .image-preview-medium {
+    border-color: #4b5563;
+    background-color: #374151;
+}
+
+.image-preview-medium img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+}
+
+/* Large preview (for hero images, featured content) */
+.image-preview-large {
+    width: 100%;
+    max-width: 500px;
+    height: 300px;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 2px solid #e5e7eb;
+    background-color: #f9fafb;
+}
+
+.dark .image-preview-large {
+    border-color: #4b5563;
+    background-color: #374151;
+}
+
+.image-preview-large img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+}
+
+/* Wide preview (for banners, panoramic images) */
+.image-preview-wide {
+    width: 100%;
+    max-width: 600px;
+    height: 200px;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 2px solid #e5e7eb;
+    background-color: #f9fafb;
+}
+
+.dark .image-preview-wide {
+    border-color: #4b5563;
+    background-color: #374151;
+}
+
+.image-preview-wide img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+}
+
+/* Square preview (for profile images, logos) */
+.image-preview-square {
+    width: 200px;
+    height: 200px;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 2px solid #e5e7eb;
+    background-color: #f9fafb;
+}
+
+.dark .image-preview-square {
+    border-color: #4b5563;
+    background-color: #374151;
+}
+
+.image-preview-square img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+}
+
+/* Video preview container */
+.video-preview-container {
+    width: 100%;
+    max-width: 500px;
+    height: 300px;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 2px solid #e5e7eb;
+    background-color: #000;
+}
+
+.dark .video-preview-container {
+    border-color: #4b5563;
+}
+
+.video-preview-container video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Placeholder for empty images */
+.image-preview-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #9ca3af;
+    font-size: 14px;
+    text-align: center;
+    padding: 16px;
+}
+
+.dark .image-preview-placeholder {
+    color: #6b7280;
+}
+
+/* Avatar preview (for user profiles, small team members) */
+.image-preview-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 9999px;
+    overflow: hidden;
+    border: 2px solid #e5e7eb;
+    background-color: #f9fafb;
+}
+
+.dark .image-preview-avatar {
+    border-color: #4b5563;
+    background-color: #374151;
+}
+
+.image-preview-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Hover effect for image previews */
+.image-preview-container:hover,
+.image-preview-small:hover,
+.image-preview-medium:hover,
+.image-preview-large:hover,
+.image-preview-wide:hover,
+.image-preview-square:hover {
+    border-color: #10b981;
+    box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.1);
+    transition: all 0.2s ease-in-out;
+}
+
+.dark .image-preview-container:hover,
+.dark .image-preview-small:hover,
+.dark .image-preview-medium:hover,
+.dark .image-preview-large:hover,
+.dark .image-preview-wide:hover,
+.dark .image-preview-square:hover {
+    border-color: #10b981;
+    box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.2);
+}

@@ -67,14 +67,14 @@ export function ChangePasswordSection({ onLogout }: ChangePasswordSectionProps) 
 
     return (
         <div className="max-w-2xl mx-auto space-y-8">
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
-                <div className="flex items-center gap-3 mb-6 pb-6 border-b border-gray-100">
-                    <div className="bg-green-100 p-2 rounded-lg">
-                        <Lock className="w-6 h-6 text-green-600" />
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-8">
+                <div className="flex items-center gap-3 mb-6 pb-6 border-b border-gray-100 dark:border-gray-700">
+                    <div className="bg-green-100 dark:bg-green-900/30 p-2 rounded-lg">
+                        <Lock className="w-6 h-6 text-green-600 dark:text-green-500" />
                     </div>
                     <div>
-                        <h3 className="text-xl font-bold text-gray-900">Change Password</h3>
-                        <p className="text-sm text-gray-600">Update your account password</p>
+                        <h3 className="text-xl font-bold text-gray-900 dark:text-white">Change Password</h3>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">Update your account password</p>
                     </div>
                 </div>
 
@@ -89,9 +89,9 @@ export function ChangePasswordSection({ onLogout }: ChangePasswordSectionProps) 
                                 onChange={handleChange}
                                 placeholder="Enter current password"
                                 required
-                                className="pl-10"
+                                className="pl-10 text-gray-900 dark:text-white dark:bg-gray-700"
                             />
-                            <Lock className="w-4 h-4 text-gray-400 absolute left-3 top-3" />
+                            <Lock className="w-4 h-4 text-gray-400 dark:text-gray-500 absolute left-3 top-3" />
                         </div>
                     </div>
 
@@ -105,9 +105,9 @@ export function ChangePasswordSection({ onLogout }: ChangePasswordSectionProps) 
                                 onChange={handleChange}
                                 placeholder="Enter new password"
                                 required
-                                className="pl-10"
+                                className="pl-10 text-gray-900 dark:text-white dark:bg-gray-700"
                             />
-                            <Lock className="w-4 h-4 text-gray-400 absolute left-3 top-3" />
+                            <Lock className="w-4 h-4 text-gray-400 dark:text-gray-500 absolute left-3 top-3" />
                         </div>
                     </div>
 
@@ -121,9 +121,9 @@ export function ChangePasswordSection({ onLogout }: ChangePasswordSectionProps) 
                                 onChange={handleChange}
                                 placeholder="Confirm new password"
                                 required
-                                className="pl-10"
+                                className="pl-10 text-gray-900 dark:text-white dark:bg-gray-700"
                             />
-                            <Lock className="w-4 h-4 text-gray-400 absolute left-3 top-3" />
+                            <Lock className="w-4 h-4 text-gray-400 dark:text-gray-500 absolute left-3 top-3" />
                         </div>
                     </div>
 

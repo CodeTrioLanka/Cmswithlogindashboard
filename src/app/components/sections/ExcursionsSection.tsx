@@ -306,25 +306,25 @@ export function ExcursionsSection() {
       ) : (
         <div className="grid grid-cols-1 gap-6">
           {excursions.map((excursion, index) => (
-            <div key={excursion._id} className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div key={excursion._id} className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 hover:shadow-md transition-shadow">
               <div className="flex items-start justify-between mb-5">
                 <div className="flex items-center gap-2">
-                  <Compass className="w-5 h-5 text-green-600" />
-                  <h4 className="font-semibold text-gray-900">Excursion {index + 1}</h4>
+                  <Compass className="w-5 h-5 text-green-600 dark:text-green-500" />
+                  <h4 className="font-semibold text-gray-900 dark:text-white">Excursion {index + 1}</h4>
                 </div>
                 <div className="flex gap-2">
                   {editingIds.has(excursion._id) ? (
                     <>
                       <button
                         onClick={() => handleCancelEdit(excursion._id)}
-                        className="p-2 text-gray-500 hover:bg-gray-100 rounded-lg transition-all"
+                        className="p-2 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-all"
                         title="Cancel"
                       >
                         <X className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => handleSaveExcursion(excursion)}
-                        className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-all"
+                        className="p-2 text-green-600 dark:text-green-500 hover:bg-green-50 dark:hover:bg-green-900/30 rounded-lg transition-all"
                         title="Save changes"
                       >
                         <Save className="w-4 h-4" />
@@ -333,7 +333,7 @@ export function ExcursionsSection() {
                   ) : (
                     <button
                       onClick={() => handleEditClick(excursion)}
-                      className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
+                      className="p-2 text-blue-600 dark:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-all"
                       title="Edit"
                     >
                       <Edit className="w-4 h-4" />
@@ -341,7 +341,7 @@ export function ExcursionsSection() {
                   )}
                   <button
                     onClick={() => handleDelete(excursion._id)}
-                    className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-all"
+                    className="p-2 text-red-600 dark:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-all"
                     title="Remove excursion"
                   >
                     <Trash2 className="w-4 h-4" />
@@ -351,58 +351,58 @@ export function ExcursionsSection() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Excursion Title</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Excursion Title</label>
                   <input
                     type="text"
                     value={excursion.title}
                     onChange={(e) => handleLocalUpdate(index, 'title', e.target.value)}
                     readOnly={!editingIds.has(excursion._id)}
-                    className={`w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all ${!editingIds.has(excursion._id) ? 'bg-gray-50 cursor-not-allowed' : ''}`}
+                    className={`w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all bg-white dark:bg-gray-700 text-gray-900 dark:text-white ${!editingIds.has(excursion._id) ? 'bg-gray-50 dark:bg-gray-800 cursor-not-allowed opacity-75' : ''}`}
                     placeholder="Enter excursion title"
                   />
                 </div>
 
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Description</label>
                   <textarea
                     value={excursion.description}
                     onChange={(e) => handleLocalUpdate(index, 'description', e.target.value)}
                     rows={3}
                     readOnly={!editingIds.has(excursion._id)}
-                    className={`w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all resize-none ${!editingIds.has(excursion._id) ? 'bg-gray-50 cursor-not-allowed' : ''}`}
+                    className={`w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all resize-none bg-white dark:bg-gray-700 text-gray-900 dark:text-white ${!editingIds.has(excursion._id) ? 'bg-gray-50 dark:bg-gray-800 cursor-not-allowed opacity-75' : ''}`}
                     placeholder="Enter excursion description"
                   />
                 </div>
                 <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-5">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Category</label>
                     <Autocomplete
                       value={excursion.category}
                       onChange={(value) => handleLocalUpdate(index, 'category', value)}
                       readOnly={!editingIds.has(excursion._id)}
-                      className={`w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all ${!editingIds.has(excursion._id) ? 'bg-gray-50 cursor-not-allowed' : ''}`}
+                      className={`w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all bg-white dark:bg-gray-700 text-gray-900 dark:text-white ${!editingIds.has(excursion._id) ? 'bg-gray-50 dark:bg-gray-800 cursor-not-allowed opacity-75' : ''}`}
                       placeholder="e.g., Adventure"
                       options={filters.categories}
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Destination</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Destination</label>
                     <Autocomplete
                       value={excursion.destination}
                       onChange={(value) => handleLocalUpdate(index, 'destination', value)}
                       readOnly={!editingIds.has(excursion._id)}
-                      className={`w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all ${!editingIds.has(excursion._id) ? 'bg-gray-50 cursor-not-allowed' : ''}`}
+                      className={`w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all bg-white dark:bg-gray-700 text-gray-900 dark:text-white ${!editingIds.has(excursion._id) ? 'bg-gray-50 dark:bg-gray-800 cursor-not-allowed opacity-75' : ''}`}
                       placeholder="e.g., Sigiriya"
                       options={filters.destinations}
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Time/Duration</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Time/Duration</label>
                     <Autocomplete
                       value={excursion.time}
                       onChange={(value) => handleLocalUpdate(index, 'time', value)}
                       readOnly={!editingIds.has(excursion._id)}
-                      className={`w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all ${!editingIds.has(excursion._id) ? 'bg-gray-50 cursor-not-allowed' : ''}`}
+                      className={`w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all bg-white dark:bg-gray-700 text-gray-900 dark:text-white ${!editingIds.has(excursion._id) ? 'bg-gray-50 dark:bg-gray-800 cursor-not-allowed opacity-75' : ''}`}
                       placeholder="e.g., 5 Hours"
                       options={filters.times}
                     />
@@ -410,7 +410,7 @@ export function ExcursionsSection() {
                 </div>
 
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Image URL</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Image URL</label>
                   <ImageUploadInput
                     value={excursion.image}
                     onChange={(url) => handleLocalUpdate(index, 'image', url)}
@@ -420,23 +420,24 @@ export function ExcursionsSection() {
                 </div>
 
                 <div className="md:col-span-2">
-                  <p className="text-gray-600 text-sm mb-1 font-medium">Image Preview:</p>
+                  <p className="text-gray-600 dark:text-gray-400 text-sm mb-1 font-medium">Image Preview:</p>
                   {excursion.image && (
-                    <img
-                      src={excursion.image}
-                      alt={excursion.title}
-                      className="w-full h-48 object-cover rounded-lg mt-1"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).style.display = 'none';
-                      }}
-                    />
+                    <div className="image-preview-medium mt-1">
+                      <img
+                        src={excursion.image}
+                        alt={excursion.title}
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).style.display = 'none';
+                        }}
+                      />
+                    </div>
                   )}
                 </div>
               </div>
             </div>
           ))}
           {excursions.length === 0 && (
-            <div className="text-center py-10 text-gray-500 bg-gray-50 rounded-lg border border-dashed border-gray-300">
+            <div className="text-center py-10 text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-dashed border-gray-300 dark:border-gray-700">
               No excursions found. Add one to get started.
             </div>
           )}

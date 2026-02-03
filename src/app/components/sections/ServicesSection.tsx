@@ -54,6 +54,7 @@ const saveServiceHero = async (heroData: Partial<ServiceHeroData>, imageFile?: F
     const response = await fetch(`${BASE_URL}/api/service-page/hero`, {
       method: 'POST',
       body: formData,
+      credentials: 'include'
     });
     if (!response.ok) throw new Error('Failed to save service hero');
     const data = await response.json();
@@ -75,6 +76,7 @@ const addServiceApi = async (serviceData: Omit<ServiceData, '_id'>, imageFile?: 
     const response = await fetch(`${BASE_URL}/api/service-page/services`, {
       method: 'POST',
       body: formData,
+      credentials: 'include'
     });
     if (!response.ok) throw new Error('Failed to create service');
     const data = await response.json();
@@ -95,6 +97,7 @@ const updateServiceApi = async (id: string, serviceData: Partial<ServiceData>, i
     const response = await fetch(`${BASE_URL}/api/service-page/services/${id}`, {
       method: 'PUT',
       body: formData,
+      credentials: 'include'
     });
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
@@ -113,6 +116,7 @@ const deleteServiceApi = async (id: string): Promise<void> => {
   try {
     const response = await fetch(`${BASE_URL}/api/service-page/services/${id}`, {
       method: 'DELETE',
+      credentials: 'include'
     });
     if (!response.ok) throw new Error('Failed to delete service');
   } catch (error) {
@@ -360,11 +364,10 @@ export function ServicesSection() {
               />
             </div>
             {heroData.heroImage && (
-              <div className="relative">
+              <div className="image-preview-large">
                 <img
                   src={heroData.heroImage}
                   alt="Hero preview"
-                  className="w-full h-48 object-cover rounded-lg border"
                 />
               </div>
             )}
@@ -462,11 +465,10 @@ export function ServicesSection() {
                     />
                   </div>
                   {newService.image && (
-                    <div className="relative mt-2">
+                    <div className="image-preview-medium mt-2">
                       <img
                         src={newService.image}
                         alt="Preview"
-                        className="w-full h-32 object-cover rounded-lg border"
                       />
                     </div>
                   )}
@@ -551,11 +553,10 @@ export function ServicesSection() {
                       />
                     </div>
                     {service.image && (
-                      <div className="relative">
+                      <div className="image-preview-small mt-2">
                         <img
                           src={service.image}
                           alt="Service preview"
-                          className="w-full h-24 object-cover rounded-lg border"
                         />
                       </div>
                     )}

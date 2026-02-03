@@ -473,11 +473,13 @@ export function ReviewsSection() {
               <div className="flex items-start justify-between mb-4">
                 <div className="flex items-start gap-4 flex-1">
                   {/* Avatar */}
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-green-400 to-emerald-500 flex items-center justify-center text-white font-semibold text-lg flex-shrink-0">
+                  <div className="image-preview-avatar flex-shrink-0">
                     {review.avatarUrl ? (
-                      <img src={review.avatarUrl} alt={review.name} className="w-full h-full rounded-full object-cover" />
+                      <img src={review.avatarUrl} alt={review.name} />
                     ) : (
-                      review.name.charAt(0).toUpperCase()
+                      <div className="w-full h-full flex items-center justify-center bg-green-500 text-white font-semibold text-lg">
+                        {review.name.charAt(0).toUpperCase()}
+                      </div>
                     )}
                   </div>
 

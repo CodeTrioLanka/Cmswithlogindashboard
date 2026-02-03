@@ -150,13 +150,15 @@ export function AboutUsSection() {
         // Update existing data
         response = await fetch(`${BASE_URL}/api/aboutus/${aboutUsData._id}`, {
           method: 'PUT',
-          body: formData
+          body: formData,
+          credentials: 'include'
         });
       } else {
         // Create new data
         response = await fetch(`${BASE_URL}/api/aboutus/setData`, {
           method: 'POST',
-          body: formData
+          body: formData,
+          credentials: 'include'
         });
       }
 
@@ -321,11 +323,10 @@ export function AboutUsSection() {
                   placeholder="Hero Background URL"
                 />
                 {hero.heroBackground && (
-                  <div className="relative w-full h-48 rounded-lg overflow-hidden border border-gray-300">
+                  <div className="image-preview-wide mt-2">
                     <img
                       src={hero.heroBackground}
                       alt="Hero background preview"
-                      className="w-full h-full object-cover"
                     />
                   </div>
                 )}
@@ -621,11 +622,10 @@ export function AboutUsSection() {
                           placeholder="Team Member Image URL"
                         />
                         {member.image && (
-                          <div className="w-16 h-16 rounded-lg overflow-hidden border border-gray-300">
+                          <div className="image-preview-square">
                             <img
                               src={member.image}
                               alt={member.name}
-                              className="w-full h-full object-cover"
                             />
                           </div>
                         )}

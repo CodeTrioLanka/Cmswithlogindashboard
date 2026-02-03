@@ -35,6 +35,7 @@ class TourCategoriesService {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify(data),
+                credentials: 'include'
             });
 
             if (!response.ok) throw new Error('Failed to create tour category');
@@ -59,6 +60,7 @@ class TourCategoriesService {
         const response = await fetch(`${API_BASE_URL}/tours`, {
             method: 'POST',
             body: formData,
+            credentials: 'include'
         });
 
         if (!response.ok) throw new Error('Failed to create tour category');
@@ -74,6 +76,7 @@ class TourCategoriesService {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify(data),
+                credentials: 'include'
             });
 
             if (!response.ok) throw new Error('Failed to update tour category');
@@ -100,6 +103,7 @@ class TourCategoriesService {
         const response = await fetch(`${API_BASE_URL}/tours/${id}`, {
             method: 'PUT',
             body: formData,
+            credentials: 'include'
         });
 
         if (!response.ok) throw new Error('Failed to update tour category');
@@ -109,6 +113,7 @@ class TourCategoriesService {
     async deleteTourCategory(id: string): Promise<{ message: string }> {
         const response = await fetch(`${API_BASE_URL}/tours/${id}`, {
             method: 'DELETE',
+            credentials: 'include'
         });
 
         if (!response.ok) throw new Error('Failed to delete tour category');

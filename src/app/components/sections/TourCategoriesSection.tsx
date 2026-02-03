@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { FolderTree, Plus, Trash2, Edit, Save, X, Image as ImageIcon } from 'lucide-react';
+import { FolderTree, Plus, Trash2, Edit, Save, X } from 'lucide-react';
 import { tourCategoriesService, type TourCategory } from '../../../services/tourCategories.service';
 import { deleteFromCloudinary } from '../../../services/deleteApi';
 import { toast } from 'sonner';
@@ -35,6 +35,22 @@ export function TourCategoriesSection() {
         } finally {
             setIsLoading(false);
         }
+    };
+
+    const generateSlug = (name: string) => {
+        return name
+            .toLowerCase()
+            .replace(/[^\w\s-]/g, '')
+            .replace(/[\s_-]+/g, '-')
+            .replace(/^-+|-+$/g, '');
+    };
+
+    const handleTitleChange = (title: string) => {
+        const updates: Partial<TourCategory> = { title };
+        if (!formData.slug || formData.slug === generateSlug(formData.title || '')) {
+            updates.slug = generateSlug(title);
+        }
+        setFormData({ ...formData, ...updates });
     };
 
     const handleAdd = () => {
@@ -118,15 +134,15 @@ export function TourCategoriesSection() {
     };
 
     if (isLoading) {
-        return <div className="text-center py-8">Loading...</div>;
+        return <div className="text-center py-8 text-gray-500 dark:text-gray-400">Loading...</div>;
     }
 
     return (
         <div className="space-y-6">
             <div className="flex justify-between items-center">
                 <div>
-                    <h3 className="text-lg font-semibold text-gray-900">Tour Categories</h3>
-                    <p className="text-sm text-gray-600 mt-1">Manage tour categories like Beach, Cultural, Honeymoon, etc.</p>
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Tour Categories</h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Manage tour categories like Beach, Cultural, Honeymoon, etc.</p>
                 </div>
                 {!isAdding && (
                     <button
@@ -141,11 +157,11 @@ export function TourCategoriesSection() {
 
             {/* Add Form */}
             {isAdding && (
-                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
                     <div className="flex items-center justify-between mb-5">
                         <div className="flex items-center gap-2">
-                            <FolderTree className="w-5 h-5 text-green-600" />
-                            <h4 className="font-semibold text-gray-900">New Category</h4>
+                            <FolderTree className="w-5 h-5 text-green-600 dark:text-green-500" />
+                            <h4 className="font-semibold text-gray-900 dark:text-white">New Category</h4>
                         </div>
                         <div className="flex gap-2">
                             <button
@@ -157,7 +173,7 @@ export function TourCategoriesSection() {
                             </button>
                             <button
                                 onClick={handleCancel}
-                                className="inline-flex items-center gap-2 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-all"
+                                className="inline-flex items-center gap-2 px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-all font-medium"
                             >
                                 <X className="w-4 h-4" />
                                 Cancel
@@ -167,45 +183,45 @@ export function TourCategoriesSection() {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">Title *</label>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Title *</label>
                             <input
                                 type="text"
                                 value={formData.title || ''}
-                                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                                onChange={(e) => handleTitleChange(e.target.value)}
+                                className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                                 placeholder="e.g., BEACH TOURS"
                             />
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">Slug *</label>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Slug *</label>
                             <input
                                 type="text"
                                 value={formData.slug || ''}
                                 onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
-                                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                                className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                                 placeholder="e.g., beach"
                             />
                         </div>
 
                         <div className="md:col-span-2">
-                            <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Description</label>
                             <textarea
                                 value={formData.description || ''}
                                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                                 rows={3}
-                                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none"
+                                className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                                 placeholder="Category description"
                             />
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">Display Order</label>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Display Order</label>
                             <input
                                 type="number"
                                 value={formData.displayOrder || 0}
                                 onChange={(e) => setFormData({ ...formData, displayOrder: parseInt(e.target.value) })}
-                                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                                className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                             />
                         </div>
 
@@ -215,38 +231,42 @@ export function TourCategoriesSection() {
                                     type="checkbox"
                                     checked={formData.isActive}
                                     onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
-                                    className="w-4 h-4 text-green-600 rounded"
+                                    className="w-4 h-4 text-green-600 dark:text-green-500 rounded bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600"
                                 />
-                                <span className="text-sm font-medium text-gray-700">Active</span>
+                                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Active</span>
                             </label>
                         </div>
 
                         <div className="md:col-span-2">
-                            <label className="block text-sm font-medium text-gray-700 mb-3">Images (2 required) *</label>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Images (2 required) *</label>
                             <div className="grid grid-cols-2 gap-4">
                                 {/* Image 1 */}
                                 <div>
-                                    <label className="block text-xs font-medium text-gray-600 mb-2">Image 1</label>
+                                    <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-2">Image 1</label>
                                     <ImageUploadInput
                                         value={formData.images?.[0] || ''}
                                         onChange={(url) => handleImageUpdate(0, url)}
                                         placeholder="Image URL"
                                     />
                                     {formData.images?.[0] && (
-                                        <img src={formData.images[0]} alt="Preview 1" className="mt-2 w-full h-32 object-cover rounded-lg border" />
+                                        <div className="image-preview-square mt-2">
+                                            <img src={formData.images[0]} alt="Preview 1" />
+                                        </div>
                                     )}
                                 </div>
 
                                 {/* Image 2 */}
                                 <div>
-                                    <label className="block text-xs font-medium text-gray-600 mb-2">Image 2</label>
+                                    <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-2">Image 2</label>
                                     <ImageUploadInput
                                         value={formData.images?.[1] || ''}
                                         onChange={(url) => handleImageUpdate(1, url)}
                                         placeholder="Image URL"
                                     />
                                     {formData.images?.[1] && (
-                                        <img src={formData.images[1]} alt="Preview 2" className="mt-2 w-full h-32 object-cover rounded-lg border" />
+                                        <div className="image-preview-square mt-2">
+                                            <img src={formData.images[1]} alt="Preview 2" />
+                                        </div>
                                     )}
                                 </div>
                             </div>
@@ -258,18 +278,18 @@ export function TourCategoriesSection() {
             {/* List */}
             <div className="grid grid-cols-1 gap-4">
                 {categories.map((category) => (
-                    <div key={category._id} className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                    <div key={category._id} className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 hover:shadow-md transition-shadow">
                         {editingId === category._id ? (
                             // Edit mode
                             <>
                                 <div className="flex items-center justify-between mb-5">
-                                    <h4 className="font-semibold text-gray-900">Edit Category</h4>
+                                    <h4 className="font-semibold text-gray-900 dark:text-white">Edit Category</h4>
                                     <div className="flex gap-2">
                                         <button onClick={handleSave} className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
                                             <Save className="w-4 h-4" />
                                             Save
                                         </button>
-                                        <button onClick={handleCancel} className="inline-flex items-center gap-2 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300">
+                                        <button onClick={handleCancel} className="inline-flex items-center gap-2 px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-all font-medium">
                                             <X className="w-4 h-4" />
                                             Cancel
                                         </button>
@@ -277,24 +297,24 @@ export function TourCategoriesSection() {
                                 </div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">Title</label>
-                                        <input type="text" value={formData.title || ''} onChange={(e) => setFormData({ ...formData, title: e.target.value })} className="w-full px-4 py-2.5 border border-gray-300 rounded-lg" />
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Title</label>
+                                        <input type="text" value={formData.title || ''} onChange={(e) => handleTitleChange(e.target.value)} className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white" />
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">Slug</label>
-                                        <input type="text" value={formData.slug || ''} onChange={(e) => setFormData({ ...formData, slug: e.target.value })} className="w-full px-4 py-2.5 border border-gray-300 rounded-lg" />
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Slug</label>
+                                        <input type="text" value={formData.slug || ''} onChange={(e) => setFormData({ ...formData, slug: e.target.value })} className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white" />
                                     </div>
                                     <div className="md:col-span-2">
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
-                                        <textarea value={formData.description || ''} onChange={(e) => setFormData({ ...formData, description: e.target.value })} rows={2} className="w-full px-4 py-2.5 border border-gray-300 rounded-lg" />
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Description</label>
+                                        <textarea value={formData.description || ''} onChange={(e) => setFormData({ ...formData, description: e.target.value })} rows={2} className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white" />
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">Display Order</label>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Display Order</label>
                                         <input
                                             type="number"
                                             value={formData.displayOrder || 0}
                                             onChange={(e) => setFormData({ ...formData, displayOrder: parseInt(e.target.value) })}
-                                            className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                                            className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                                         />
                                     </div>
 
@@ -304,38 +324,42 @@ export function TourCategoriesSection() {
                                                 type="checkbox"
                                                 checked={formData.isActive}
                                                 onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
-                                                className="w-4 h-4 text-green-600 rounded"
+                                                className="w-4 h-4 text-green-600 dark:text-green-500 rounded bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600"
                                             />
-                                            <span className="text-sm font-medium text-gray-700">Active</span>
+                                            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Active</span>
                                         </label>
                                     </div>
 
                                     <div className="md:col-span-2">
-                                        <label className="block text-sm font-medium text-gray-700 mb-3">Images (2 required) *</label>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Images (2 required) *</label>
                                         <div className="grid grid-cols-2 gap-4">
                                             {/* Image 1 */}
                                             <div>
-                                                <label className="block text-xs font-medium text-gray-600 mb-2">Image 1</label>
+                                                <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-2">Image 1</label>
                                                 <ImageUploadInput
                                                     value={formData.images?.[0] || ''}
                                                     onChange={(url) => handleImageUpdate(0, url)}
                                                     placeholder="Image URL"
                                                 />
                                                 {formData.images?.[0] && (
-                                                    <img src={formData.images[0]} alt="Preview 1" className="mt-2 w-full h-32 object-cover rounded-lg border" />
+                                                    <div className="image-preview-square mt-2">
+                                                        <img src={formData.images[0]} alt="Preview 1" />
+                                                    </div>
                                                 )}
                                             </div>
 
                                             {/* Image 2 */}
                                             <div>
-                                                <label className="block text-xs font-medium text-gray-600 mb-2">Image 2</label>
+                                                <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-2">Image 2</label>
                                                 <ImageUploadInput
                                                     value={formData.images?.[1] || ''}
                                                     onChange={(url) => handleImageUpdate(1, url)}
                                                     placeholder="Image URL"
                                                 />
                                                 {formData.images?.[1] && (
-                                                    <img src={formData.images[1]} alt="Preview 2" className="mt-2 w-full h-32 object-cover rounded-lg border" />
+                                                    <div className="image-preview-square mt-2">
+                                                        <img src={formData.images[1]} alt="Preview 2" />
+                                                    </div>
                                                 )}
                                             </div>
                                         </div>
@@ -348,24 +372,26 @@ export function TourCategoriesSection() {
                                 <div className="flex items-start justify-between">
                                     <div className="flex-1">
                                         <div className="flex items-center gap-3 mb-2">
-                                            <h4 className="text-lg font-semibold text-gray-900">{category.title}</h4>
-                                            <span className={`px-2 py-1 text-xs rounded-full ${category.isActive ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'}`}>
+                                            <h4 className="text-lg font-semibold text-gray-900 dark:text-white">{category.title}</h4>
+                                            <span className={`px-2 py-1 text-xs rounded-full font-medium ${category.isActive ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-500' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-400'}`}>
                                                 {category.isActive ? 'Active' : 'Inactive'}
                                             </span>
                                         </div>
-                                        <p className="text-sm text-gray-600 mb-3">Slug: <code className="bg-gray-100 px-2 py-1 rounded">{category.slug}</code></p>
-                                        {category.description && <p className="text-sm text-gray-700 mb-4">{category.description}</p>}
+                                        <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">Slug: <code className="bg-gray-100 dark:bg-gray-900/50 px-2 py-1 rounded">{category.slug}</code></p>
+                                        {category.description && <p className="text-sm text-gray-700 dark:text-gray-300 mb-4">{category.description}</p>}
                                         <div className="flex gap-3">
                                             {category.images.map((img, idx) => (
-                                                <img key={idx} src={img} alt={`${category.title} ${idx + 1}`} className="w-24 h-24 object-cover rounded-lg border" />
+                                                <div key={idx} className="image-preview-square">
+                                                    <img src={img} alt={`${category.title} ${idx + 1}`} />
+                                                </div>
                                             ))}
                                         </div>
                                     </div>
                                     <div className="flex gap-2">
-                                        <button onClick={() => handleEdit(category)} className="p-2 text-green-600 hover:bg-green-50 rounded-lg">
+                                        <button onClick={() => handleEdit(category)} className="p-2 text-green-600 dark:text-green-500 hover:bg-green-50 dark:hover:bg-green-900/30 rounded-lg transition-colors">
                                             <Edit className="w-4 h-4" />
                                         </button>
-                                        <button onClick={() => handleDelete(category._id!)} className="p-2 text-red-600 hover:bg-red-50 rounded-lg">
+                                        <button onClick={() => handleDelete(category._id!)} className="p-2 text-red-600 dark:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors">
                                             <Trash2 className="w-4 h-4" />
                                         </button>
                                     </div>
@@ -377,9 +403,9 @@ export function TourCategoriesSection() {
             </div>
 
             {categories.length === 0 && !isAdding && (
-                <div className="text-center py-12 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
-                    <FolderTree className="w-12 h-12 text-gray-400 mx-auto mb-3" />
-                    <p className="text-gray-600">No tour categories yet. Click "Add Category" to create one.</p>
+                <div className="text-center py-12 bg-gray-50 dark:bg-gray-800 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-700">
+                    <FolderTree className="w-12 h-12 text-gray-400 dark:text-gray-500 mx-auto mb-3" />
+                    <p className="text-gray-600 dark:text-gray-400 font-medium">No tour categories yet. Click "Add Category" to create one.</p>
                 </div>
             )}
         </div>
