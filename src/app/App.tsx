@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Toaster } from 'sonner';
 import { Login } from './components/Login';
 import { Dashboard } from './components/Dashboard';
 
@@ -168,6 +169,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <Toaster position="top-right" richColors />
       {!isLoggedIn ? (
         <Login onLogin={handleLogin} />
       ) : (

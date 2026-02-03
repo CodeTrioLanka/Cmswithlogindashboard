@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { LogOut, Save, Home, Info, MapPin, Compass, Activity, Briefcase, Star, Mail, ChevronRight, FolderTree, Package } from 'lucide-react';
+import { LogOut, Save, Home, Info, MapPin, Compass, Activity, Briefcase, Star, Mail, ChevronRight, FolderTree, Package, Lock } from 'lucide-react';
 import type { CMSData } from '../App';
 import { HomeSection } from './sections/HomeSection';
 import { AboutUsSection } from './sections/AboutUsSection';
@@ -10,6 +10,7 @@ import { ThingsToDoSection } from './sections/ThingsToDoSection';
 import { ServicesSection } from './sections/ServicesSection';
 import { ReviewsSection } from './sections/ReviewsSection';
 import { ContactSection } from './sections/ContactSection';
+import { ChangePasswordSection } from './sections/ChangePasswordSection';
 import natureEscapeLogo from '../../assets/nature-escape-logo.png';
 
 interface DashboardProps {
@@ -19,7 +20,7 @@ interface DashboardProps {
   user?: { id: string; email: string; role: string };
 }
 
-type Section = 'home' | 'about' | 'tourCategories' | 'packages' | 'excursions' | 'things' | 'services' | 'reviews' | 'contact';
+type Section = 'home' | 'about' | 'tourCategories' | 'packages' | 'excursions' | 'things' | 'services' | 'reviews' | 'contact' | 'changePassword';
 
 export function Dashboard({ cmsData, onUpdate, onLogout, user }: DashboardProps) {
   const [activeSection, setActiveSection] = useState<Section>('home');
@@ -36,6 +37,7 @@ export function Dashboard({ cmsData, onUpdate, onLogout, user }: DashboardProps)
     { id: 'services' as Section, label: 'Services', icon: Briefcase },
     { id: 'reviews' as Section, label: 'Reviews', icon: Star },
     { id: 'contact' as Section, label: 'Contact', icon: Mail },
+    { id: 'changePassword' as Section, label: 'Change Password', icon: Lock },
   ];
 
   const handleSave = () => {
@@ -64,6 +66,8 @@ export function Dashboard({ cmsData, onUpdate, onLogout, user }: DashboardProps)
         return <ReviewsSection data={formData.reviews} onChange={(data) => setFormData({ ...formData, reviews: data })} />;
       case 'contact':
         return <ContactSection data={formData.contact} onChange={(data) => setFormData({ ...formData, contact: data })} />;
+      case 'changePassword':
+        return <ChangePasswordSection onLogout={onLogout} />;
       default:
         return null;
     }

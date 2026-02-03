@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
-import { FolderTree, Plus, Trash2, Edit, Save, X, Image as ImageIcon, Upload } from 'lucide-react';
+import { FolderTree, Plus, Trash2, Edit, Save, X, Image as ImageIcon } from 'lucide-react';
 import { tourCategoriesService, type TourCategory } from '../../../services/tourCategories.service';
-import { uploadToCloudinary } from '../../../services/cloudinaryApi';
 import { deleteFromCloudinary } from '../../../services/deleteApi';
 import { toast } from 'sonner';
+import { ImageUploadInput } from '../ui/ImageUploadInput';
 
 export function TourCategoriesSection() {
     const [categories, setCategories] = useState<TourCategory[]>([]);
@@ -19,10 +19,6 @@ export function TourCategoriesSection() {
         displayOrder: 0,
         images: ['', '']
     });
-
-    const [imageFiles, setImageFiles] = useState<File[]>([]);
-    const [imagePreviews, setImagePreviews] = useState<string[]>([]);
-    const [uploading, setUploading] = useState<{ [key: number]: boolean }>({});
 
     useEffect(() => {
         loadCategories();
@@ -41,20 +37,6 @@ export function TourCategoriesSection() {
         }
     };
 
-    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const files = Array.from(e.target.files || []);
-        if (files.length > 2) {
-            alert('Maximum 2 images allowed');
-            return;
-        }
-
-        setImageFiles(files);
-
-        // Create previews
-        const previews = files.map(file => URL.createObjectURL(file));
-        setImagePreviews(previews);
-    };
-
     const handleAdd = () => {
         setIsAdding(true);
         setFormData({
@@ -65,24 +47,18 @@ export function TourCategoriesSection() {
             displayOrder: categories.length,
             images: ['', '']
         });
-        setImageFiles([]);
-        setImagePreviews([]);
     };
 
     const handleEdit = (category: TourCategory) => {
         console.log('Editing category:', category);
         setEditingId(category._id!);
         setFormData(category);
-        setImagePreviews(category.images);
-        setImageFiles([]);
     };
 
     const handleCancel = () => {
         setIsAdding(false);
         setEditingId(null);
         setFormData({});
-        setImageFiles([]);
-        setImagePreviews([]);
     };
 
     const handleSave = async () => {
@@ -98,14 +74,12 @@ export function TourCategoriesSection() {
                     return;
                 }
                 console.log('Creating tour category with data:', formData);
-                // Images are already Cloudinary URLs in formData
                 const response = await tourCategoriesService.createTourCategory(formData as Omit<TourCategory, '_id'>, []);
                 console.log('Create response:', response);
                 toast.success(response.message || 'Tour category created successfully!');
             } else if (editingId) {
                 console.log('Updating tour category with data:', formData);
                 console.log('Editing ID:', editingId);
-                // Images are already Cloudinary URLs in formData
                 const response = await tourCategoriesService.updateTourCategory(editingId, formData, []);
                 console.log('Update response:', response);
                 toast.success(response.message || 'Tour category updated successfully!');
@@ -130,6 +104,17 @@ export function TourCategoriesSection() {
             console.error('Failed to delete tour category:', error);
             toast.error(error instanceof Error ? error.message : 'Failed to delete. Please try again.');
         }
+    };
+
+    const handleImageUpdate = async (index: number, newUrl: string) => {
+        const oldUrl = formData.images?.[index];
+        if (oldUrl && oldUrl !== newUrl && oldUrl.includes('cloudinary')) {
+            await deleteFromCloudinary(oldUrl);
+        }
+
+        const newImages = [...(formData.images || ['', ''])];
+        newImages[index] = newUrl;
+        setFormData(prev => ({ ...prev, images: newImages }));
     };
 
     if (isLoading) {
@@ -242,162 +227,26 @@ export function TourCategoriesSection() {
                                 {/* Image 1 */}
                                 <div>
                                     <label className="block text-xs font-medium text-gray-600 mb-2">Image 1</label>
-                                    <div className="flex gap-2">
-                                        <input
-                                            type="url"
-                                            value={formData.images?.[0] || ''}
-                                            onChange={(e) => {
-                                                const newImages = [...(formData.images || ['', ''])];
-                                                newImages[0] = e.target.value;
-                                                setFormData({ ...formData, images: newImages });
-                                            }}
-                                            className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm"
-                                            placeholder="Image URL"
-                                        />
-                                        <button
-                                            type="button"
-                                            onClick={async () => {
-                                                const input = document.createElement('input');
-                                                input.type = 'file';
-                                                input.accept = 'image/*';
-                                                input.onchange = async (e) => {
-                                                    const file = (e.target as HTMLInputElement).files?.[0];
-                                                    if (file) {
-                                                        // Show uploading state
-                                                        setUploading(prev => ({ ...prev, 0: true }));
-
-                                                        try {
-                                                            // Store old image URL for deletion
-                                                            const oldImageUrl = formData.images?.[0];
-
-                                                            // Upload to Cloudinary
-                                                            const url = await uploadToCloudinary(file);
-
-                                                            // Delete old image if it exists and is from Cloudinary
-                                                            if (oldImageUrl && oldImageUrl !== url && oldImageUrl.includes('cloudinary')) {
-                                                                await deleteFromCloudinary(oldImageUrl);
-                                                            }
-
-                                                            // Update form data with Cloudinary URL (using functional setState)
-                                                            setFormData(prev => {
-                                                                const currentImages = prev.images || ['', ''];
-                                                                return { ...prev, images: [url, currentImages[1] || ''] };
-                                                            });
-
-                                                            // Set preview
-                                                            setImagePreviews(prev => {
-                                                                const currentPreviews = prev || ['', ''];
-                                                                return [url, currentPreviews[1] || ''];
-                                                            });
-                                                        } catch (error) {
-                                                            console.error('Upload failed:', error);
-                                                            toast.error('Failed to upload image. Please try again.');
-                                                        } finally {
-                                                            setUploading(prev => ({ ...prev, 0: false }));
-                                                        }
-                                                    }
-                                                };
-                                                input.click();
-                                            }}
-                                            disabled={uploading[0]}
-                                            className="px-3 py-2 bg-gray-100 border border-gray-300 rounded-lg text-sm hover:bg-gray-200 flex items-center gap-1 disabled:opacity-50"
-                                        >
-                                            {uploading[0] ? (
-                                                <>
-                                                    <div className="w-3 h-3 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" />
-                                                    <span>Uploading...</span>
-                                                </>
-                                            ) : (
-                                                <>
-                                                    <Upload className="w-3 h-3" />
-                                                    Browse
-                                                </>
-                                            )}
-                                        </button>
-                                    </div>
-                                    {imagePreviews[0] && (
-                                        <img src={imagePreviews[0]} alt="Preview 1" className="mt-2 w-full h-32 object-cover rounded-lg border" />
+                                    <ImageUploadInput
+                                        value={formData.images?.[0] || ''}
+                                        onChange={(url) => handleImageUpdate(0, url)}
+                                        placeholder="Image URL"
+                                    />
+                                    {formData.images?.[0] && (
+                                        <img src={formData.images[0]} alt="Preview 1" className="mt-2 w-full h-32 object-cover rounded-lg border" />
                                     )}
                                 </div>
 
                                 {/* Image 2 */}
                                 <div>
                                     <label className="block text-xs font-medium text-gray-600 mb-2">Image 2</label>
-                                    <div className="flex gap-2">
-                                        <input
-                                            type="url"
-                                            value={formData.images?.[1] || ''}
-                                            onChange={(e) => {
-                                                const newImages = [...(formData.images || ['', ''])];
-                                                newImages[1] = e.target.value;
-                                                setFormData({ ...formData, images: newImages });
-                                            }}
-                                            className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm"
-                                            placeholder="Image URL"
-                                        />
-                                        <button
-                                            type="button"
-                                            onClick={async () => {
-                                                const input = document.createElement('input');
-                                                input.type = 'file';
-                                                input.accept = 'image/*';
-                                                input.onchange = async (e) => {
-                                                    const file = (e.target as HTMLInputElement).files?.[0];
-                                                    if (file) {
-                                                        // Show uploading state
-                                                        setUploading(prev => ({ ...prev, 1: true }));
-
-                                                        try {
-                                                            // Store old image URL for deletion
-                                                            const oldImageUrl = formData.images?.[1];
-
-                                                            // Upload to Cloudinary
-                                                            const url = await uploadToCloudinary(file);
-
-                                                            // Delete old image if it exists and is from Cloudinary
-                                                            if (oldImageUrl && oldImageUrl !== url && oldImageUrl.includes('cloudinary')) {
-                                                                await deleteFromCloudinary(oldImageUrl);
-                                                            }
-
-                                                            // Update form data with Cloudinary URL (using functional setState)
-                                                            setFormData(prev => {
-                                                                const currentImages = prev.images || ['', ''];
-                                                                return { ...prev, images: [currentImages[0] || '', url] };
-                                                            });
-
-                                                            // Set preview
-                                                            setImagePreviews(prev => {
-                                                                const currentPreviews = prev || ['', ''];
-                                                                return [currentPreviews[0] || '', url];
-                                                            });
-                                                        } catch (error) {
-                                                            console.error('Upload failed:', error);
-                                                            toast.error('Failed to upload image. Please try again.');
-                                                        } finally {
-                                                            setUploading(prev => ({ ...prev, 1: false }));
-                                                        }
-                                                    }
-                                                };
-                                                input.click();
-                                            }}
-                                            disabled={uploading[1]}
-                                            className="px-3 py-2 bg-gray-100 border border-gray-300 rounded-lg text-sm hover:bg-gray-200 flex items-center gap-1 disabled:opacity-50"
-                                        >
-                                            {uploading[1] ? (
-                                                <>
-                                                    <div className="w-3 h-3 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" />
-                                                    <span>Uploading...</span>
-                                                </>
-                                            ) : (
-                                                <>
-                                                    <Upload className="w-3 h-3" />
-                                                    Browse
-                                                </>
-                                            )}
-                                        </button>
-                                    </div>
-                                    {imagePreviews[1] && (
-                                        <img src={imagePreviews[1]} alt="Preview 2" className="mt-2 w-full h-32 object-cover rounded-lg border" />
+                                    <ImageUploadInput
+                                        value={formData.images?.[1] || ''}
+                                        onChange={(url) => handleImageUpdate(1, url)}
+                                        placeholder="Image URL"
+                                    />
+                                    {formData.images?.[1] && (
+                                        <img src={formData.images[1]} alt="Preview 2" className="mt-2 w-full h-32 object-cover rounded-lg border" />
                                     )}
                                 </div>
                             </div>
@@ -467,160 +316,26 @@ export function TourCategoriesSection() {
                                             {/* Image 1 */}
                                             <div>
                                                 <label className="block text-xs font-medium text-gray-600 mb-2">Image 1</label>
-                                                <div className="flex gap-2">
-                                                    <input
-                                                        type="url"
-                                                        value={formData.images?.[0] || ''}
-                                                        onChange={(e) => {
-                                                            const newImages = [...(formData.images || ['', ''])];
-                                                            newImages[0] = e.target.value;
-                                                            setFormData({ ...formData, images: newImages });
-                                                            setImagePreviews(prev => {
-                                                                const currentPreviews = prev || ['', ''];
-                                                                return [e.target.value, currentPreviews[1] || ''];
-                                                            });
-                                                        }}
-                                                        className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm"
-                                                        placeholder="Image URL"
-                                                    />
-                                                    <button
-                                                        type="button"
-                                                        onClick={async () => {
-                                                            const input = document.createElement('input');
-                                                            input.type = 'file';
-                                                            input.accept = 'image/*';
-                                                            input.onchange = async (e) => {
-                                                                const file = (e.target as HTMLInputElement).files?.[0];
-                                                                if (file) {
-                                                                    setUploading(prev => ({ ...prev, 0: true }));
-                                                                    try {
-                                                                        // Store old image URL for deletion
-                                                                        const oldImageUrl = formData.images?.[0];
-
-                                                                        const url = await uploadToCloudinary(file);
-
-                                                                        // Delete old image if it exists and is from Cloudinary
-                                                                        if (oldImageUrl && oldImageUrl !== url && oldImageUrl.includes('cloudinary')) {
-                                                                            await deleteFromCloudinary(oldImageUrl);
-                                                                        }
-
-                                                                        setFormData(prev => {
-                                                                            const currentImages = prev.images || ['', ''];
-                                                                            return { ...prev, images: [url, currentImages[1] || ''] };
-                                                                        });
-                                                                        setImagePreviews(prev => {
-                                                                            const currentPreviews = prev || ['', ''];
-                                                                            return [url, currentPreviews[1] || ''];
-                                                                        });
-                                                                        toast.success('Image 1 uploaded successfully!');
-                                                                    } catch (error) {
-                                                                        console.error('Upload failed:', error);
-                                                                        toast.error('Failed to upload image. Please try again.');
-                                                                    } finally {
-                                                                        setUploading(prev => ({ ...prev, 0: false }));
-                                                                    }
-                                                                }
-                                                            };
-                                                            input.click();
-                                                        }}
-                                                        disabled={uploading[0]}
-                                                        className="px-3 py-2 bg-gray-100 border border-gray-300 rounded-lg text-sm hover:bg-gray-200 flex items-center gap-1 disabled:opacity-50"
-                                                    >
-                                                        {uploading[0] ? (
-                                                            <>
-                                                                <div className="w-3 h-3 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" />
-                                                                <span>Uploading...</span>
-                                                            </>
-                                                        ) : (
-                                                            <>
-                                                                <Upload className="w-3 h-3" />
-                                                                Browse
-                                                            </>
-                                                        )}
-                                                    </button>
-                                                </div>
-                                                {imagePreviews[0] && (
-                                                    <img src={imagePreviews[0]} alt="Preview 1" className="mt-2 w-full h-32 object-cover rounded-lg border" />
+                                                <ImageUploadInput
+                                                    value={formData.images?.[0] || ''}
+                                                    onChange={(url) => handleImageUpdate(0, url)}
+                                                    placeholder="Image URL"
+                                                />
+                                                {formData.images?.[0] && (
+                                                    <img src={formData.images[0]} alt="Preview 1" className="mt-2 w-full h-32 object-cover rounded-lg border" />
                                                 )}
                                             </div>
 
                                             {/* Image 2 */}
                                             <div>
                                                 <label className="block text-xs font-medium text-gray-600 mb-2">Image 2</label>
-                                                <div className="flex gap-2">
-                                                    <input
-                                                        type="url"
-                                                        value={formData.images?.[1] || ''}
-                                                        onChange={(e) => {
-                                                            const newImages = [...(formData.images || ['', ''])];
-                                                            newImages[1] = e.target.value;
-                                                            setFormData({ ...formData, images: newImages });
-                                                            setImagePreviews(prev => {
-                                                                const currentPreviews = prev || ['', ''];
-                                                                return [currentPreviews[0] || '', e.target.value];
-                                                            });
-                                                        }}
-                                                        className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm"
-                                                        placeholder="Image URL"
-                                                    />
-                                                    <button
-                                                        type="button"
-                                                        onClick={async () => {
-                                                            const input = document.createElement('input');
-                                                            input.type = 'file';
-                                                            input.accept = 'image/*';
-                                                            input.onchange = async (e) => {
-                                                                const file = (e.target as HTMLInputElement).files?.[0];
-                                                                if (file) {
-                                                                    setUploading(prev => ({ ...prev, 1: true }));
-                                                                    try {
-                                                                        // Store old image URL for deletion
-                                                                        const oldImageUrl = formData.images?.[1];
-
-                                                                        const url = await uploadToCloudinary(file);
-
-                                                                        // Delete old image if it exists and is from Cloudinary
-                                                                        if (oldImageUrl && oldImageUrl !== url && oldImageUrl.includes('cloudinary')) {
-                                                                            await deleteFromCloudinary(oldImageUrl);
-                                                                        }
-
-                                                                        setFormData(prev => {
-                                                                            const currentImages = prev.images || ['', ''];
-                                                                            return { ...prev, images: [currentImages[0] || '', url] };
-                                                                        });
-                                                                        setImagePreviews(prev => {
-                                                                            const currentPreviews = prev || ['', ''];
-                                                                            return [currentPreviews[0] || '', url];
-                                                                        });
-                                                                        toast.success('Image 2 uploaded successfully!');
-                                                                    } catch (error) {
-                                                                        console.error('Upload failed:', error);
-                                                                        toast.error('Failed to upload image. Please try again.');
-                                                                    } finally {
-                                                                        setUploading(prev => ({ ...prev, 1: false }));
-                                                                    }
-                                                                }
-                                                            };
-                                                            input.click();
-                                                        }}
-                                                        disabled={uploading[1]}
-                                                        className="px-3 py-2 bg-gray-100 border border-gray-300 rounded-lg text-sm hover:bg-gray-200 flex items-center gap-1 disabled:opacity-50"
-                                                    >
-                                                        {uploading[1] ? (
-                                                            <>
-                                                                <div className="w-3 h-3 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" />
-                                                                <span>Uploading...</span>
-                                                            </>
-                                                        ) : (
-                                                            <>
-                                                                <Upload className="w-3 h-3" />
-                                                                Browse
-                                                            </>
-                                                        )}
-                                                    </button>
-                                                </div>
-                                                {imagePreviews[1] && (
-                                                    <img src={imagePreviews[1]} alt="Preview 2" className="mt-2 w-full h-32 object-cover rounded-lg border" />
+                                                <ImageUploadInput
+                                                    value={formData.images?.[1] || ''}
+                                                    onChange={(url) => handleImageUpdate(1, url)}
+                                                    placeholder="Image URL"
+                                                />
+                                                {formData.images?.[1] && (
+                                                    <img src={formData.images[1]} alt="Preview 2" className="mt-2 w-full h-32 object-cover rounded-lg border" />
                                                 )}
                                             </div>
                                         </div>

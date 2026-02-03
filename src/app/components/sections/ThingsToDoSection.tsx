@@ -1,7 +1,8 @@
 // ... imports
 import { useState, useEffect } from 'react';
-import { Activity, Plus, Trash2, Save, Upload, ImageIcon, LayoutTemplate } from 'lucide-react';
-import { uploadToCloudinary } from "../../../services/cloudinaryApi";
+import { Activity, Plus, Trash2, Save, ImageIcon, LayoutTemplate, Edit, X } from 'lucide-react';
+import { deleteFromCloudinary } from "../../../services/deleteApi";
+import { ImageUploadInput } from '../ui/ImageUploadInput';
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '../ui/dialog';
 import { Button } from '../ui/button';
@@ -32,6 +33,8 @@ export function ThingsToDoSection({ data: _initialData, onChange: _onChange }: T
   const [formData, setFormData] = useState<ThingsToDoData>(INITIAL_DATA);
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [originalData, setOriginalData] = useState<ThingsToDoData | null>(null);
 
   // Dialog State
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -41,14 +44,43 @@ export function ThingsToDoSection({ data: _initialData, onChange: _onChange }: T
     image: ''
   });
 
-  // Uploading States
-  const [uploadingHero, setUploadingHero] = useState(false);
-  const [uploadingNew, setUploadingNew] = useState(false);
-  const [uploadingItems, setUploadingItems] = useState<{ [key: number]: boolean }>({});
+
 
   useEffect(() => {
     loadData();
   }, []);
+
+  const handleDeleteImage = async (url: string) => {
+    if (url && url.includes('cloudinary')) {
+      try {
+        await deleteFromCloudinary(url);
+      } catch (error) {
+        console.error('Failed to delete image:', error);
+      }
+    }
+  };
+
+  const handleHeroImageUpdate = (url: string) => {
+    const currentHero = formData.thingsToDoHeroes[0] || INITIAL_HERO;
+    const oldUrl = currentHero.heroImage;
+    if (oldUrl && oldUrl !== url) handleDeleteImage(oldUrl);
+    updateHeroField('heroImage', url);
+  };
+
+  const handleNewActivityImageUpdate = (url: string) => {
+    const oldUrl = newActivity.image;
+    if (oldUrl && oldUrl !== url) handleDeleteImage(oldUrl);
+    setNewActivity(prev => ({ ...prev, image: url }));
+  };
+
+  const handleActivityImageUpdate = (index: number, url: string) => {
+    const oldUrl = formData.thingsToDo[index].image;
+    if (oldUrl && oldUrl !== url) handleDeleteImage(oldUrl);
+
+    const updatedList = [...formData.thingsToDo];
+    updatedList[index] = { ...updatedList[index], image: url };
+    setFormData(prev => ({ ...prev, thingsToDo: updatedList }));
+  };
 
   const loadData = async () => {
     try {
@@ -60,6 +92,7 @@ export function ThingsToDoSection({ data: _initialData, onChange: _onChange }: T
           data.thingsToDoHeroes = [INITIAL_HERO];
         }
         setFormData(data);
+        setOriginalData(data);
         if (_onChange) _onChange(data);
       }
     } catch (error) {
@@ -68,6 +101,13 @@ export function ThingsToDoSection({ data: _initialData, onChange: _onChange }: T
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleCancel = () => {
+    if (originalData) {
+      setFormData(originalData);
+    }
+    setIsEditing(false);
   };
 
   const handleSaveAll = async () => {
@@ -85,9 +125,16 @@ export function ThingsToDoSection({ data: _initialData, onChange: _onChange }: T
       } else {
         result = await createThingsToDo(dataToSave);
       }
+
       setFormData(result);
+      setOriginalData(result);
       if (_onChange) _onChange(result);
-      toast.success('Changes saved successfully!');
+
+      setIsEditing(false);
+      // Use logic to safely access message if it exists on result, though service might return data directly
+      // Adjusting to generic message + fallback if service returns object with message
+      const message = (result as any)?.message || 'Changes saved successfully!';
+      toast.success(message);
     } catch (error) {
       console.error('Failed to save:', error);
       toast.error('Failed to save changes');
@@ -105,49 +152,7 @@ export function ThingsToDoSection({ data: _initialData, onChange: _onChange }: T
     });
   };
 
-  const handleHeroImageUpload = async (file: File) => {
-    setUploadingHero(true);
-    try {
-      const url = await uploadToCloudinary(file);
-      updateHeroField('heroImage', url);
-      toast.success('Hero image uploaded');
-    } catch (error) {
-      console.error('Upload failed:', error);
-      toast.error('Failed to upload image');
-    } finally {
-      setUploadingHero(false);
-    }
-  };
 
-  const handleNewItemUpload = async (file: File) => {
-    setUploadingNew(true);
-    try {
-      const url = await uploadToCloudinary(file);
-      setNewActivity(prev => ({ ...prev, image: url }));
-      toast.success('Image uploaded');
-    } catch (error) {
-      console.error('Upload failed:', error);
-      toast.error('Failed to upload image');
-    } finally {
-      setUploadingNew(false);
-    }
-  };
-
-  const handleUpdateItemImage = async (index: number, file: File) => {
-    setUploadingItems(prev => ({ ...prev, [index]: true }));
-    try {
-      const url = await uploadToCloudinary(file);
-      const updatedList = [...formData.thingsToDo];
-      updatedList[index] = { ...updatedList[index], image: url };
-      setFormData(prev => ({ ...prev, thingsToDo: updatedList }));
-      toast.success('Image updated');
-    } catch (error) {
-      console.error('Upload failed:', error);
-      toast.error('Failed to upload image');
-    } finally {
-      setUploadingItems(prev => ({ ...prev, [index]: false }));
-    }
-  };
 
   const handleAddActivity = () => {
     if (!newActivity.title) {
@@ -174,18 +179,7 @@ export function ThingsToDoSection({ data: _initialData, onChange: _onChange }: T
     setFormData(prev => ({ ...prev, thingsToDo: updatedList }));
   };
 
-  const triggerFileInput = (callback: (file: File) => void) => {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = 'image/*';
-    input.onchange = (e) => {
-      const files = (e.target as HTMLInputElement).files;
-      if (files && files[0]) {
-        callback(files[0]);
-      }
-    };
-    input.click();
-  };
+
 
   if (isLoading) {
     return <div className="p-8 text-center text-gray-500">Loading Things To Do content...</div>;
@@ -200,23 +194,41 @@ export function ThingsToDoSection({ data: _initialData, onChange: _onChange }: T
           <h3 className="text-xl font-bold text-gray-900">Things To Do Page</h3>
           <p className="text-sm text-gray-600">Manage hero section and activities list</p>
         </div>
-        <Button
-          onClick={handleSaveAll}
-          disabled={isSaving}
-          className="bg-green-600 hover:bg-green-700 text-white gap-2"
-        >
-          {isSaving ? (
-            <>
-              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-              Saving...
-            </>
-          ) : (
-            <>
-              <Save className="w-4 h-4" />
-              Save Changes
-            </>
+        <div className="flex gap-2">
+          {isEditing && (
+            <Button
+              onClick={handleCancel}
+              disabled={isSaving}
+              variant="secondary"
+              className="bg-gray-500 hover:bg-gray-600 text-white gap-2"
+            >
+              <X className="w-4 h-4" />
+              Cancel
+            </Button>
           )}
-        </Button>
+          <Button
+            onClick={isEditing ? handleSaveAll : () => setIsEditing(true)}
+            disabled={isSaving}
+            className={`${isEditing ? 'bg-green-600 hover:bg-green-700' : 'bg-blue-600 hover:bg-blue-700'} text-white gap-2`}
+          >
+            {isSaving ? (
+              <>
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                Saving...
+              </>
+            ) : isEditing ? (
+              <>
+                <Save className="w-4 h-4" />
+                Save Changes
+              </>
+            ) : (
+              <>
+                <Edit className="w-4 h-4" />
+                Edit
+              </>
+            )}
+          </Button>
+        </div>
       </div>
 
       {/* Hero Section */}
@@ -235,6 +247,8 @@ export function ThingsToDoSection({ data: _initialData, onChange: _onChange }: T
                 value={currentHero.title}
                 onChange={(e) => updateHeroField('title', e.target.value)}
                 placeholder="e.g. Things To Do"
+                readOnly={!isEditing}
+                className={!isEditing ? 'bg-gray-50 cursor-not-allowed' : ''}
               />
             </div>
             <div className="grid gap-2">
@@ -244,6 +258,8 @@ export function ThingsToDoSection({ data: _initialData, onChange: _onChange }: T
                 value={currentHero.subtitle}
                 onChange={(e) => updateHeroField('subtitle', e.target.value)}
                 placeholder="e.g. Discover our activities"
+                readOnly={!isEditing}
+                className={!isEditing ? 'bg-gray-50 cursor-not-allowed' : ''}
               />
             </div>
             <div className="grid gap-2">
@@ -254,46 +270,29 @@ export function ThingsToDoSection({ data: _initialData, onChange: _onChange }: T
                 onChange={(e) => updateHeroField('description', e.target.value)}
                 placeholder="Section description..."
                 rows={3}
+                readOnly={!isEditing}
+                className={!isEditing ? 'bg-gray-50 cursor-not-allowed resize-none' : 'resize-none'}
               />
             </div>
           </div>
 
           <div className="space-y-2">
             <Label>Hero Image</Label>
-            <div className="border-2 border-dashed border-gray-200 rounded-lg p-4 flex flex-col items-center justify-center min-h-[200px] relative bg-gray-50 group">
-              {currentHero.heroImage ? (
-                <div className="relative w-full h-48">
-                  <img
-                    src={currentHero.heroImage}
-                    alt="Hero"
-                    className="w-full h-full object-cover rounded-md"
-                  />
-                  <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all flex items-center justify-center opacity-0 group-hover:opacity-100">
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      onClick={() => triggerFileInput(handleHeroImageUpload)}
-                      disabled={uploadingHero}
-                    >
-                      Change Image
-                    </Button>
-                  </div>
-                </div>
-              ) : (
-                <div className="text-center">
-                  <ImageIcon className="w-10 h-10 text-gray-400 mx-auto mb-2" />
-                  <p className="text-sm text-gray-500 mb-2">No hero image selected</p>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => triggerFileInput(handleHeroImageUpload)}
-                    disabled={uploadingHero}
-                  >
-                    {uploadingHero ? 'Uploading...' : 'Upload Image'}
-                  </Button>
-                </div>
-              )}
-            </div>
+            <ImageUploadInput
+              value={currentHero.heroImage}
+              onChange={handleHeroImageUpdate}
+              placeholder="Hero Image URL"
+              disabled={!isEditing}
+            />
+            {currentHero.heroImage && (
+              <div className="mt-2 w-full h-48 rounded-lg overflow-hidden border border-gray-200">
+                <img
+                  src={currentHero.heroImage}
+                  alt="Hero"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -310,60 +309,56 @@ export function ThingsToDoSection({ data: _initialData, onChange: _onChange }: T
           </div>
 
           {/* POPUP BOX */}
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogTrigger asChild>
-              <Button className="bg-green-600 hover:bg-green-700 text-white">
-                <Plus className="w-4 h-4 mr-2" />
-                Add Activity
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Add New Activity</DialogTitle>
-                <DialogDescription>Add a new item to the Things To Do list.</DialogDescription>
-              </DialogHeader>
-              <div className="space-y-4 py-4">
-                <div className="grid gap-2">
-                  <Label>Title</Label>
-                  <Input
-                    value={newActivity.title}
-                    onChange={(e) => setNewActivity({ ...newActivity, title: e.target.value })}
-                    placeholder="Activity Title"
-                  />
-                </div>
-                <div className="grid gap-2">
-                  <Label>Description</Label>
-                  <Textarea
-                    value={newActivity.description}
-                    onChange={(e) => setNewActivity({ ...newActivity, description: e.target.value })}
-                    placeholder="Activity Description"
-                  />
-                </div>
-                <div className="grid gap-2">
-                  <Label>Image</Label>
-                  <div className="flex gap-2">
+          {isEditing && (
+            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+              <DialogTrigger asChild>
+                <Button className="bg-green-600 hover:bg-green-700 text-white">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Activity
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Add New Activity</DialogTitle>
+                  <DialogDescription>Add a new item to the Things To Do list.</DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4 py-4">
+                  <div className="grid gap-2">
+                    <Label>Title</Label>
                     <Input
-                      value={newActivity.image}
-                      placeholder="Image URL"
-                      readOnly
-                      className="bg-gray-50"
+                      value={newActivity.title}
+                      onChange={(e) => setNewActivity({ ...newActivity, title: e.target.value })}
+                      placeholder="Activity Title"
                     />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => triggerFileInput(handleNewItemUpload)}
-                      disabled={uploadingNew}
-                    >
-                      {uploadingNew ? '...' : <Upload className="w-4 h-4" />}
-                    </Button>
+                  </div>
+                  <div className="grid gap-2">
+                    <Label>Description</Label>
+                    <Textarea
+                      value={newActivity.description}
+                      onChange={(e) => setNewActivity({ ...newActivity, description: e.target.value })}
+                      placeholder="Activity Description"
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label>Image</Label>
+                    <ImageUploadInput
+                      value={newActivity.image}
+                      onChange={handleNewActivityImageUpdate}
+                      placeholder="Activity Image URL"
+                    />
+                    {newActivity.image && (
+                      <div className="mt-2 h-32 rounded-lg overflow-hidden border border-gray-200">
+                        <img src={newActivity.image} alt="Preview" className="w-full h-full object-cover" />
+                      </div>
+                    )}
                   </div>
                 </div>
-              </div>
-              <DialogFooter>
-                <Button onClick={handleAddActivity}>Add Activity</Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
+                <DialogFooter>
+                  <Button onClick={handleAddActivity}>Add Activity</Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          )}
         </div>
 
         {formData.thingsToDo.length === 0 ? (
@@ -376,29 +371,25 @@ export function ThingsToDoSection({ data: _initialData, onChange: _onChange }: T
           <div className="grid gap-6">
             {formData.thingsToDo.map((item, index) => (
               <div key={item._id || index} className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 transition-all hover:shadow-md">
-                <div className="flex flex-col md:flex-row gap-6">
+                <div className="flex flex-col lg:flex-row gap-6">
                   {/* Image Column */}
                   <div className="w-full md:w-72 flex-shrink-0">
-                    <div className="relative group rounded-lg overflow-hidden h-48 md:h-56 bg-gray-100 border border-gray-200">
+                    <div className="space-y-2">
+                      <ImageUploadInput
+                        value={item.image}
+                        onChange={(url) => handleActivityImageUpdate(index, url)}
+                        placeholder="Image URL"
+                        disabled={!isEditing}
+                      />
                       {item.image ? (
-                        <img src={item.image} alt={item.title} className="w-full h-full object-cover" />
+                        <div className="rounded-lg overflow-hidden h-40 bg-gray-100 border border-gray-200">
+                          <img src={item.image} alt={item.title} className="w-full h-full object-cover" />
+                        </div>
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center text-gray-400">
+                        <div className="h-40 bg-gray-100 border border-gray-200 rounded-lg flex items-center justify-center text-gray-400">
                           <ImageIcon className="w-8 h-8" />
                         </div>
                       )}
-                      <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all flex items-center justify-center opacity-0 group-hover:opacity-100">
-                        <Button
-                          variant="secondary"
-                          size="sm"
-                          className="h-8 text-xs"
-                          onClick={() => triggerFileInput((f) => handleUpdateItemImage(index, f))}
-                          disabled={uploadingItems[index]}
-                        >
-                          <Upload className="w-3 h-3 mr-1" />
-                          Change
-                        </Button>
-                      </div>
                     </div>
                   </div>
 
@@ -409,7 +400,8 @@ export function ThingsToDoSection({ data: _initialData, onChange: _onChange }: T
                       <Input
                         value={item.title}
                         onChange={(e) => handleUpdateActivity(index, 'title', e.target.value)}
-                        className="font-medium"
+                        className={`font-medium ${!isEditing ? 'bg-gray-50 cursor-not-allowed' : ''}`}
+                        readOnly={!isEditing}
                       />
                     </div>
                     <div className="grid gap-2">
@@ -418,22 +410,25 @@ export function ThingsToDoSection({ data: _initialData, onChange: _onChange }: T
                         value={item.description}
                         onChange={(e) => handleUpdateActivity(index, 'description', e.target.value)}
                         rows={2}
-                        className="text-sm text-gray-600 min-h-[80px]"
+                        className={`text-sm text-gray-600 min-h-[80px] ${!isEditing ? 'bg-gray-50 cursor-not-allowed resize-none' : 'resize-none'}`}
+                        readOnly={!isEditing}
                       />
                     </div>
                   </div>
 
                   {/* Actions Column */}
-                  <div className="flex flex-col gap-2 justify-start border-l border-gray-100 pl-4 md:pl-6">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="text-red-500 hover:text-red-600 hover:bg-red-50"
-                      onClick={() => handleRemoveActivity(index)}
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                  </div>
+                  {isEditing && (
+                    <div className="flex flex-col gap-2 justify-start border-l border-gray-100 pl-4 md:pl-6">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="text-red-500 hover:text-red-600 hover:bg-red-50"
+                        onClick={() => handleRemoveActivity(index)}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  )}
                 </div>
               </div>
             ))}

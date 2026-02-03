@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
-import { Briefcase, Plus, Trash2, Save, Upload, X, Edit, Image } from 'lucide-react';
+import { Briefcase, Plus, Trash2, Save, X, Edit, Image } from 'lucide-react';
+import { ImageUploadInput } from '../ui/ImageUploadInput';
+import { deleteFromCloudinary } from '../../../services/deleteApi';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '../ui/dialog';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
@@ -131,8 +133,6 @@ export function ServicesSection() {
   const [originalHeroData, setOriginalHeroData] = useState<ServiceHeroData | null>(null);
   const [isHeroEditing, setIsHeroEditing] = useState(false);
   const [heroLoading, setHeroLoading] = useState(false);
-  const [heroImageFile, setHeroImageFile] = useState<File | null>(null);
-  const [heroImagePreview, setHeroImagePreview] = useState<string>('');
 
   // Services state
   const [services, setServices] = useState<ServiceData[]>([]);
@@ -144,15 +144,40 @@ export function ServicesSection() {
     description: '',
     image: ''
   });
-  const [newImageFile, setNewImageFile] = useState<File | null>(null);
-  const [newImagePreview, setNewImagePreview] = useState<string>('');
-  const [editImageFiles, setEditImageFiles] = useState<{ [key: string]: File }>({});
-  const [editImagePreviews, setEditImagePreviews] = useState<{ [key: string]: string }>({});
+
 
   // Load data on mount
   useEffect(() => {
     loadData();
   }, []);
+
+  const handleDeleteImage = async (url: string) => {
+    if (url && url.includes('cloudinary')) {
+      try {
+        await deleteFromCloudinary(url);
+      } catch (error) {
+        console.error('Failed to delete image:', error);
+      }
+    }
+  };
+
+  const handleHeroImageUpdate = (url: string) => {
+    const oldUrl = heroData.heroImage;
+    if (oldUrl && oldUrl !== url) handleDeleteImage(oldUrl);
+    handleHeroInputChange('heroImage', url);
+  };
+
+  const handleNewServiceImageUpdate = (url: string) => {
+    const oldUrl = newService.image;
+    if (oldUrl && oldUrl !== url) handleDeleteImage(oldUrl);
+    setNewService(prev => ({ ...prev, image: url }));
+  };
+
+  const handleServiceImageUpdate = (index: number, url: string) => {
+    const oldUrl = services[index].image;
+    if (oldUrl && oldUrl !== url) handleDeleteImage(oldUrl);
+    handleLocalUpdate(index, 'image', url);
+  };
 
   const loadData = async () => {
     try {
@@ -188,8 +213,6 @@ export function ServicesSection() {
       subtitle: '',
       description: '',
     });
-    setHeroImageFile(null);
-    setHeroImagePreview('');
     setIsHeroEditing(false);
   };
 
@@ -197,21 +220,12 @@ export function ServicesSection() {
     setHeroData(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleHeroImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setHeroImageFile(file);
-      setHeroImagePreview(URL.createObjectURL(file));
-    }
-  };
 
   const handleHeroSave = async () => {
     try {
       setHeroLoading(true);
-      await saveServiceHero(heroData, heroImageFile || undefined);
+      await saveServiceHero(heroData);
       await loadHeroData();
-      setHeroImageFile(null);
-      setHeroImagePreview('');
       setIsHeroEditing(false);
       toast.success('Hero section saved successfully!');
     } catch (error) {
@@ -228,39 +242,6 @@ export function ServicesSection() {
     await loadData();
   };
 
-  const handleNewImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      if (file.size > 5 * 1024 * 1024) {
-        toast.error('File size too large. Please select an image under 5MB.');
-        return;
-      }
-      setNewImageFile(file);
-      setNewImagePreview(URL.createObjectURL(file));
-      setNewService(prev => ({ ...prev, image: '' }));
-    }
-  };
-
-  const handleEditImageSelect = (serviceId: string, e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    console.log('File selected for service:', serviceId, file?.name);
-    if (file) {
-      if (file.size > 5 * 1024 * 1024) {
-        toast.error('File size too large. Please select an image under 5MB.');
-        return;
-      }
-      setEditImageFiles(prev => ({ ...prev, [serviceId]: file }));
-      setEditImagePreviews(prev => ({ ...prev, [serviceId]: URL.createObjectURL(file) }));
-
-      // Clear the text input by updating the service state
-      setServices(prevServices =>
-        prevServices.map(s =>
-          s._id === serviceId ? { ...s, image: '' } : s
-        )
-      );
-    }
-  };
-
   const handleAddService = async () => {
     if (!newService.title || !newService.description) {
       toast.error('Please fill in all required fields');
@@ -268,11 +249,8 @@ export function ServicesSection() {
     }
     try {
       setIsLoading(true);
-      console.log('Adding new service. Image file:', newImageFile?.name);
-      await addServiceApi(newService, newImageFile || undefined);
+      await addServiceApi(newService);
       setNewService({ title: '', description: '', image: '' });
-      setNewImageFile(null);
-      setNewImagePreview('');
       setIsDialogOpen(false);
       await loadServices();
       toast.success('Service created successfully!');
@@ -313,8 +291,6 @@ export function ServicesSection() {
 
     try {
       setIsSaving(prev => ({ ...prev, [service._id!]: true }));
-      const imageFile = editImageFiles[service._id!];
-      console.log('File found for update:', imageFile ? imageFile.name : 'No file');
 
       console.log('Sending update to API...');
 
@@ -325,21 +301,8 @@ export function ServicesSection() {
         image: service.image
       };
 
-      const updatedService = await updateServiceApi(service._id, servicePayload, imageFile);
+      const updatedService = await updateServiceApi(service._id, servicePayload);
       console.log('API Response:', updatedService);
-
-      if (imageFile) {
-        setEditImageFiles(prev => {
-          const newFiles = { ...prev };
-          delete newFiles[service._id!];
-          return newFiles;
-        });
-        setEditImagePreviews(prev => {
-          const newPreviews = { ...prev };
-          delete newPreviews[service._id!];
-          return newPreviews;
-        });
-      }
 
       // Reload is important to get the authoritative state back
       await loadServices();
@@ -354,21 +317,6 @@ export function ServicesSection() {
 
   return (
     <div className="space-y-8">
-      {/* Hidden file inputs for easier access */}
-      <input
-        type="file"
-        id="hero-image-input"
-        className="hidden"
-        accept="image/*"
-        onChange={handleHeroImageSelect}
-      />
-      <input
-        type="file"
-        id="new-service-image-input"
-        className="hidden"
-        accept="image/*"
-        onChange={handleNewImageSelect}
-      />
 
       {/* ============ SERVICES HERO SECTION ============ */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
@@ -403,43 +351,21 @@ export function ServicesSection() {
           {/* Hero Image */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Hero Image</label>
-            <div className="flex gap-2 mb-2">
-              <input
-                type="url"
+            <div className="mb-2">
+              <ImageUploadInput
                 value={heroData.heroImage}
-                onChange={(e) => handleHeroInputChange('heroImage', e.target.value)}
-                readOnly={!isHeroEditing}
-                className={`flex-1 px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all ${!isHeroEditing ? 'bg-gray-50 cursor-not-allowed' : ''}`}
+                onChange={handleHeroImageUpdate}
+                disabled={!isHeroEditing}
                 placeholder="Hero image URL"
               />
-              <button
-                type="button"
-                onClick={() => document.getElementById('hero-image-input')?.click()}
-                disabled={!isHeroEditing}
-                className={`px-4 py-2.5 bg-gray-100 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-200 transition-all flex items-center gap-2 ${!isHeroEditing ? 'opacity-50 cursor-not-allowed' : ''}`}
-              >
-                <Upload className="w-4 h-4" />
-                Browse
-              </button>
             </div>
-            {(heroImagePreview || heroData.heroImage) && (
+            {heroData.heroImage && (
               <div className="relative">
                 <img
-                  src={heroImagePreview || heroData.heroImage}
+                  src={heroData.heroImage}
                   alt="Hero preview"
                   className="w-full h-48 object-cover rounded-lg border"
                 />
-                {heroImagePreview && isHeroEditing && (
-                  <button
-                    onClick={() => {
-                      setHeroImageFile(null);
-                      setHeroImagePreview('');
-                    }}
-                    className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
-                  >
-                    <X className="w-3 h-3" />
-                  </button>
-                )}
               </div>
             )}
           </div>
@@ -528,41 +454,20 @@ export function ServicesSection() {
                 </div>
                 <div className="grid gap-2">
                   <Label>Service Image</Label>
-                  <div className="flex gap-2">
-                    <Input
-                      type="url"
-                      placeholder="Image URL (or upload below)"
+                  <div className="mb-2">
+                    <ImageUploadInput
                       value={newService.image}
-                      onChange={(e) => setNewService({ ...newService, image: e.target.value })}
-                      className="flex-1"
+                      onChange={handleNewServiceImageUpdate}
+                      placeholder="Image URL"
                     />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => document.getElementById('new-service-image-input')?.click()}
-                    >
-                      <Upload className="w-4 h-4 mr-2" />
-                      Browse
-                    </Button>
                   </div>
-                  {(newImagePreview || newService.image) && (
+                  {newService.image && (
                     <div className="relative mt-2">
                       <img
-                        src={newImagePreview || newService.image}
+                        src={newService.image}
                         alt="Preview"
                         className="w-full h-32 object-cover rounded-lg border"
                       />
-                      {newImagePreview && (
-                        <button
-                          onClick={() => {
-                            setNewImageFile(null);
-                            setNewImagePreview('');
-                          }}
-                          className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
-                        >
-                          <X className="w-3 h-3" />
-                        </button>
-                      )}
                     </div>
                   )}
                 </div>
@@ -638,61 +543,20 @@ export function ServicesSection() {
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Image</label>
-                    <div className="flex gap-2 mb-2">
-                      <input
-                        type="url"
+                    <div className="mb-2">
+                      <ImageUploadInput
                         value={service.image || ''}
-                        onChange={(e) => handleLocalUpdate(index, 'image', e.target.value)}
-                        className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all text-sm"
+                        onChange={(url) => handleServiceImageUpdate(index, url)}
                         placeholder="Image URL"
                       />
-                      <input
-                        type="file"
-                        id={`service-image-input-${service._id}`}
-                        className="hidden"
-                        accept="image/*"
-                        onChange={(e) => handleEditImageSelect(service._id!, e)}
-                        onClick={(e) => ((e.target as HTMLInputElement).value = '')}
-                      />
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const fileInput = document.getElementById(`service-image-input-${service._id}`);
-                          if (fileInput) fileInput.click();
-                          else console.error('File input not found for ID:', service._id);
-                        }}
-                        className="px-3 py-2 bg-gray-100 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-200 transition-all flex items-center gap-1 text-sm"
-                      >
-                        <Upload className="w-3 h-3" />
-                        Browse
-                      </button>
                     </div>
-                    {(editImagePreviews[service._id || ''] || service.image) && (
+                    {service.image && (
                       <div className="relative">
                         <img
-                          src={editImagePreviews[service._id || ''] || service.image}
+                          src={service.image}
                           alt="Service preview"
                           className="w-full h-24 object-cover rounded-lg border"
                         />
-                        {editImagePreviews[service._id || ''] && (
-                          <button
-                            onClick={() => {
-                              setEditImageFiles(prev => {
-                                const newFiles = { ...prev };
-                                delete newFiles[service._id!];
-                                return newFiles;
-                              });
-                              setEditImagePreviews(prev => {
-                                const newPreviews = { ...prev };
-                                delete newPreviews[service._id!];
-                                return newPreviews;
-                              });
-                            }}
-                            className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-0.5 hover:bg-red-600"
-                          >
-                            <X className="w-3 h-3" />
-                          </button>
-                        )}
                       </div>
                     )}
                   </div>

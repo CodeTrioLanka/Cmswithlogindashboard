@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
 import { Package as PackageIcon, Plus, Trash2, Edit, Save, X, ChevronDown, ChevronUp, Upload, Image as ImageIcon } from 'lucide-react';
+import { ImageUploadInput } from '../ui/ImageUploadInput';
 import { packagesService, type Package } from '../../../services/packages.service';
 import { tourCategoriesService, type TourCategory } from '../../../services/tourCategories.service';
 import { uploadToCloudinary } from '../../../services/cloudinaryApi';
+import { deleteFromCloudinary } from '../../../services/deleteApi';
 import { toast } from 'sonner';
 
 export function PackagesSection() {
@@ -58,6 +60,22 @@ export function PackagesSection() {
         } finally {
             setIsLoading(false);
         }
+    };
+
+    const handleDeleteImage = async (url: string) => {
+        if (url && url.includes('cloudinary')) {
+            try {
+                await deleteFromCloudinary(url);
+            } catch (error) {
+                console.error('Failed to delete image:', error);
+            }
+        }
+    };
+
+    const handleHeroImageUpdate = (url: string) => {
+        const oldUrl = formData.hero?.backgroundImage;
+        if (oldUrl && oldUrl !== url) handleDeleteImage(oldUrl);
+        setFormData({ ...formData, hero: { ...formData.hero!, backgroundImage: url } });
     };
 
     const handleAdd = () => {
@@ -182,19 +200,7 @@ export function PackagesSection() {
         setFormData({ ...formData, itinerary: newItinerary });
     };
 
-    const handleImageUpload = async (file: File, field: string): Promise<string> => {
-        try {
-            setUploading(prev => ({ ...prev, [field]: true }));
-            const url = await uploadToCloudinary(file);
-            return url;
-        } catch (error) {
-            console.error('Upload failed:', error);
-            toast.error('Failed to upload image');
-            throw error;
-        } finally {
-            setUploading(prev => ({ ...prev, [field]: false }));
-        }
-    };
+
 
     if (isLoading) {
         return <div className="text-center py-8">Loading...</div>;
@@ -348,46 +354,11 @@ export function PackagesSection() {
                                     </div>
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-2">Background Image URL</label>
-                                        <div className="flex gap-2">
-                                            <input
-                                                type="url"
-                                                value={formData.hero?.backgroundImage || ''}
-                                                onChange={(e) => setFormData({ ...formData, hero: { ...formData.hero!, backgroundImage: e.target.value } })}
-                                                className="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                                                placeholder="Image URL"
-                                            />
-                                            <button
-                                                type="button"
-                                                onClick={async () => {
-                                                    const input = document.createElement('input');
-                                                    input.type = 'file';
-                                                    input.accept = 'image/*';
-                                                    input.onchange = async (e) => {
-                                                        const file = (e.target as HTMLInputElement).files?.[0];
-                                                        if (file) {
-                                                            const url = await handleImageUpload(file, 'heroBackground');
-                                                            setFormData({ ...formData, hero: { ...formData.hero!, backgroundImage: url } });
-                                                            toast.success('Hero background uploaded!');
-                                                        }
-                                                    };
-                                                    input.click();
-                                                }}
-                                                disabled={uploading.heroBackground}
-                                                className="px-4 py-2.5 bg-green-700 text-white rounded-lg hover:bg-green-800 flex items-center gap-2 disabled:opacity-50"
-                                            >
-                                                {uploading.heroBackground ? (
-                                                    <>
-                                                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                                                        Uploading...
-                                                    </>
-                                                ) : (
-                                                    <>
-                                                        <Upload className="w-4 h-4" />
-                                                        Upload
-                                                    </>
-                                                )}
-                                            </button>
-                                        </div>
+                                        <ImageUploadInput
+                                            value={formData.hero?.backgroundImage || ''}
+                                            onChange={handleHeroImageUpdate}
+                                            placeholder="Image URL"
+                                        />
                                         {formData.hero?.backgroundImage && (
                                             <img src={formData.hero.backgroundImage} alt="Hero preview" className="mt-3 w-full h-48 object-cover rounded-lg border" />
                                         )}
@@ -661,6 +632,8 @@ export function PackagesSection() {
                                                                 <button
                                                                     onClick={() => {
                                                                         const galleries = [...(formData.galleries || [{ title: 'Visual Journeys', images: [] }])];
+                                                                        const imageToDelete = galleries[0].images[idx];
+                                                                        handleDeleteImage(imageToDelete);
                                                                         galleries[0].images = galleries[0].images.filter((_, i) => i !== idx);
                                                                         setFormData({ ...formData, galleries });
                                                                     }}

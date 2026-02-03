@@ -17,6 +17,7 @@ import {
   AlertCircle
 } from 'lucide-react';
 import { reviewsService, Review, ReviewStats, ReviewFilters } from '../../../services/reviews.service';
+import { ImageUploadInput } from '../ui/ImageUploadInput';
 
 export function ReviewsSection() {
   const [reviews, setReviews] = useState<Review[]>([]);
@@ -594,8 +595,8 @@ export function ReviewsSection() {
                     key={pageNum}
                     onClick={() => handlePageChange(pageNum)}
                     className={`px-3 py-1 rounded-lg transition-all ${currentPage === pageNum
-                        ? 'bg-green-600 text-white'
-                        : 'text-gray-600 hover:bg-gray-100'
+                      ? 'bg-green-600 text-white'
+                      : 'text-gray-600 hover:bg-gray-100'
                       }`}
                   >
                     {pageNum}
@@ -689,12 +690,10 @@ export function ReviewsSection() {
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Avatar URL
                 </label>
-                <input
-                  type="url"
+                <ImageUploadInput
                   value={formData.avatarUrl}
-                  onChange={(e) => setFormData({ ...formData, avatarUrl: e.target.value })}
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                  placeholder="https://example.com/avatar.jpg"
+                  onChange={(url) => setFormData({ ...formData, avatarUrl: url })}
+                  placeholder="Avatar Image URL"
                 />
               </div>
 

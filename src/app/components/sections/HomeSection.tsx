@@ -1,6 +1,7 @@
-import { Home, Image, BarChart3, Save, Plus, X, Edit, Upload } from "lucide-react";
+import { Home, Image, BarChart3, Save, Plus, X, Edit } from "lucide-react";
+import { ImageUploadInput } from "../ui/ImageUploadInput";
 import { useEffect, useState } from "react";
-import { fetchHomeData, updateHomeData } from "../../../services/homeApi";
+import { fetchHomeData } from "../../../services/homeApi";
 import { uploadToCloudinary, uploadMultipleToCloudinary } from "../../../services/cloudinaryApi";
 import { deleteFromCloudinary } from "../../../services/deleteApi";
 import { toast } from "sonner";
@@ -56,6 +57,18 @@ export function HomeSection() {
     loadHomeData();
   }, []);
 
+  const handleImageUpdate = async (field: string, newUrl: string) => {
+    const oldUrl = homeData[field as keyof HomeData] as string;
+    if (oldUrl && oldUrl !== newUrl && oldUrl.includes('cloudinary')) {
+      try {
+        await deleteFromCloudinary(oldUrl);
+      } catch (error) {
+        console.error('Failed to delete old image:', error);
+      }
+    }
+    handleInputChange(field, newUrl);
+  };
+
   const handleCancel = () => {
     setHomeData(originalData || {
       title: "",
@@ -108,10 +121,10 @@ export function HomeSection() {
     }
   };
 
-  const createFileInput = (field: string, multiple = false) => {
+  const createFileInput = (field: string, multiple = false, acceptType = "image/*") => {
     const input = document.createElement("input");
     input.type = "file";
-    input.accept = "image/*";
+    input.accept = acceptType;
     input.multiple = multiple;
     input.onchange = (e) => {
       const selectedFiles = (e.target as HTMLInputElement).files;
@@ -134,6 +147,8 @@ export function HomeSection() {
         gallery: homeData.gallery // Include gallery array
       };
 
+      let result;
+
       if (homeData._id) {
         // For updates, send the data directly since images are already uploaded to Cloudinary
         const response = await fetch(`${BASE_URL}/api/home/${homeData._id}`, {
@@ -143,7 +158,9 @@ export function HomeSection() {
           },
           body: JSON.stringify(dataToSend),
         });
-        if (!response.ok) throw new Error('Failed to update');
+        result = await response.json();
+        if (!response.ok) throw new Error(result.message || 'Failed to update');
+        toast.success(result.message || 'Updated successfully!');
       } else {
         // Create new data
         const response = await fetch(`${BASE_URL}/api/home`, {
@@ -153,18 +170,20 @@ export function HomeSection() {
           },
           body: JSON.stringify(dataToSend),
         });
-        if (!response.ok) throw new Error('Failed to create');
+        result = await response.json();
+        if (!response.ok) throw new Error(result.message || 'Failed to create');
+        toast.success(result.message || 'Created successfully!');
       }
+
+      setIsEditing(false);
 
       const data = await fetchHomeData();
       if (data) {
         setHomeData(data);
       }
-      setIsEditing(false);
-      toast.success(homeData._id ? 'Updated successfully!' : 'Created successfully!');
     } catch (error) {
       console.error('Error saving home data:', error);
-      toast.error('Error saving data');
+      toast.error(error instanceof Error ? error.message : 'Error saving data');
     } finally {
       setLoading(false);
     }
@@ -232,38 +251,33 @@ export function HomeSection() {
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Background Image
+              Background Image or Video
             </label>
-            <div className="flex gap-2 mb-2">
-              <input
-                type="url"
+            <div className="mb-2">
+              <ImageUploadInput
                 value={homeData.homebg}
-                onChange={(e) => handleInputChange("homebg", e.target.value)}
-                readOnly={!isEditing}
-                className={`flex-1 px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all ${!isEditing ? 'bg-gray-50 cursor-not-allowed' : ''}`}
-                placeholder="Background image URL"
+                onChange={(url) => handleImageUpdate("homebg", url)}
+                disabled={!isEditing}
+                placeholder="Background image or video URL"
+                accept="image/*,video/*"
               />
-              <button
-                type="button"
-                onClick={() => createFileInput("homebg")}
-                disabled={!isEditing || uploading.homebg}
-                className={`px-4 py-2.5 bg-gray-100 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-200 transition-all flex items-center gap-2 ${!isEditing || uploading.homebg ? 'opacity-50 cursor-not-allowed' : ''}`}
-              >
-                {uploading.homebg ? (
-                  <div className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" />
-                ) : (
-                  <Upload className="w-4 h-4" />
-                )}
-                {uploading.homebg ? 'Uploading...' : 'Browse'}
-              </button>
             </div>
             {homeData.homebg && (
               <div className="mt-2">
-                <img
-                  src={homeData.homebg}
-                  alt="Background preview"
-                  className="w-32 h-auto rounded border"
-                />
+                {homeData.homebg.includes('/video/upload/') || homeData.homebg.endsWith('.mp4') || homeData.homebg.endsWith('.webm') || homeData.homebg.endsWith('.mov') ? (
+                  <video
+                    src={homeData.homebg}
+                    className="w-64 h-auto rounded border"
+                    controls
+                    muted
+                  />
+                ) : (
+                  <img
+                    src={homeData.homebg}
+                    alt="Background preview"
+                    className="w-32 h-auto rounded border"
+                  />
+                )}
               </div>
             )}
           </div>
@@ -359,36 +373,17 @@ export function HomeSection() {
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Destination Image
             </label>
-            <div className="flex gap-2 mb-2">
-              <input
-                type="url"
-                value={homeData.destinationImage}
-                onChange={(e) =>
-                  handleInputChange("destinationImage", e.target.value)
-                }
-                readOnly={!isEditing}
-                className={`flex-1 px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all ${!isEditing ? 'bg-gray-50 cursor-not-allowed' : ''}`}
-                placeholder="Image URL"
-              />
-              <button
-                type="button"
-                onClick={() => createFileInput("destinationImage")}
-                disabled={!isEditing || uploading.destinationImage}
-                className={`px-4 py-2.5 bg-gray-100 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-200 transition-all flex items-center gap-2 ${!isEditing || uploading.destinationImage ? 'opacity-50 cursor-not-allowed' : ''}`}
-              >
-                {uploading.destinationImage ? (
-                  <div className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" />
-                ) : (
-                  <Upload className="w-4 h-4" />
-                )}
-                {uploading.destinationImage ? 'Uploading...' : 'Browse'}
-              </button>
-            </div>
+            <ImageUploadInput
+              value={homeData.destinationImage}
+              onChange={(url) => handleImageUpdate("destinationImage", url)}
+              disabled={!isEditing}
+              placeholder="Image URL"
+            />
             {homeData.destinationImage && (
               <img
                 src={homeData.destinationImage}
                 alt="Destination preview"
-                className="w-full h-auto rounded border"
+                className="w-full h-auto rounded border mt-2"
               />
             )}
           </div>
@@ -396,36 +391,17 @@ export function HomeSection() {
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Personalized Image
             </label>
-            <div className="flex gap-2 mb-2">
-              <input
-                type="url"
-                value={homeData.personalizedImage}
-                onChange={(e) =>
-                  handleInputChange("personalizedImage", e.target.value)
-                }
-                readOnly={!isEditing}
-                className={`flex-1 px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all ${!isEditing ? 'bg-gray-50 cursor-not-allowed' : ''}`}
-                placeholder="Image URL"
-              />
-              <button
-                type="button"
-                onClick={() => createFileInput("personalizedImage")}
-                disabled={!isEditing || uploading.personalizedImage}
-                className={`px-4 py-2.5 bg-gray-100 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-200 transition-all flex items-center gap-2 ${!isEditing || uploading.personalizedImage ? 'opacity-50 cursor-not-allowed' : ''}`}
-              >
-                {uploading.personalizedImage ? (
-                  <div className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" />
-                ) : (
-                  <Upload className="w-4 h-4" />
-                )}
-                {uploading.personalizedImage ? 'Uploading...' : 'Browse'}
-              </button>
-            </div>
+            <ImageUploadInput
+              value={homeData.personalizedImage}
+              onChange={(url) => handleImageUpdate("personalizedImage", url)}
+              disabled={!isEditing}
+              placeholder="Image URL"
+            />
             {homeData.personalizedImage && (
               <img
                 src={homeData.personalizedImage}
                 alt="Personalized preview"
-                className="w-full h-auto rounded border"
+                className="w-full h-auto rounded border mt-2"
               />
             )}
           </div>

@@ -1,6 +1,9 @@
-import { Compass, Plus, Trash2, Save } from 'lucide-react';
+import { Compass, Plus, Trash2, Save, Edit, X } from 'lucide-react';
+import { toast } from 'sonner';
+import { ImageUploadInput } from '../ui/ImageUploadInput';
 import { useEffect, useState } from 'react';
 import { fetchExcursions, addExcursion, deleteExcursion, updateExcursion, fetchExcursionFilters } from '../../../services/excursionApi';
+import { deleteFromCloudinary } from '../../../services/deleteApi';
 import { Autocomplete } from '../ui/autocomplete';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '../ui/dialog';
 import { Button } from '../ui/button';
@@ -22,6 +25,8 @@ interface Excursion {
 
 export function ExcursionsSection() {
   const [excursions, setExcursions] = useState<Excursion[]>([]);
+  const [editingIds, setEditingIds] = useState<Set<string>>(new Set());
+  const [originalData, setOriginalData] = useState<{ [key: string]: Excursion }>({});
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [formData, setFormData] = useState({
@@ -59,12 +64,61 @@ export function ExcursionsSection() {
   const loadExcursions = async () => {
     try {
       const data = await fetchExcursions();
-      setExcursions(data);
+      console.log('🔍 Raw excursions data:', data);
+      console.log('🔍 Data type:', typeof data);
+      console.log('🔍 Is Array?:', Array.isArray(data));
+
+      let list: Excursion[] = [];
+
+      // Handle the actual backend structure: [{excursion: [...]}]
+      if (Array.isArray(data) && data.length > 0 && data[0].excursion && Array.isArray(data[0].excursion)) {
+        console.log('✅ Data is in array[0].excursion property');
+        list = data[0].excursion;
+      } else if (Array.isArray(data)) {
+        console.log('✅ Data is direct array');
+        list = data;
+      } else if (data && Array.isArray(data.data)) {
+        console.log('✅ Data is in data.data property');
+        list = data.data;
+      } else if (data && Array.isArray(data.excursions)) {
+        console.log('✅ Data is in data.excursions property');
+        list = data.excursions;
+      } else if (data && Array.isArray(data.excursion)) {
+        console.log('✅ Data is in data.excursion property');
+        list = data.excursion;
+      } else if (data && data.data && Array.isArray(data.data.excursions)) {
+        console.log('✅ Data is in data.data.excursions property');
+        list = data.data.excursions;
+      } else {
+        console.log('❌ Could not find array in response. Data structure:', Object.keys(data || {}));
+      }
+
+      console.log('🎯 Final processed list:', list);
+      console.log('🎯 List length:', list.length);
+      setExcursions(list);
+      console.log('✅ State updated with', list.length, 'excursions');
     } catch (error) {
-      console.error('Failed to load excursions', error);
+      console.error('❌ Failed to load excursions', error);
     } finally {
       setLoading(false);
+      console.log('✅ Loading set to false');
     }
+  };
+
+  const handleDeleteImage = async (url: string) => {
+    if (url && url.includes('cloudinary')) {
+      try {
+        await deleteFromCloudinary(url);
+      } catch (error) {
+        console.error('Failed to delete image:', error);
+      }
+    }
+  };
+
+  const handleNewImageUpdate = (url: string) => {
+    const oldUrl = formData.image;
+    if (oldUrl && oldUrl !== url) handleDeleteImage(oldUrl);
+    setFormData(prev => ({ ...prev, image: url }));
   };
 
   const handleDelete = async (id: string) => {
@@ -87,27 +141,64 @@ export function ExcursionsSection() {
 
   const handleSubmit = async () => {
     try {
-      await addExcursion(formData);
+      setLoading(true);
+      const response = await addExcursion(formData);
+      console.log('Add excursion response:', response);
+
       setIsDialogOpen(false);
       setFormData({ title: '', description: '', image: '', category: '', time: '', destination: '' });
-      loadExcursions();
+      await loadExcursions(); // Refresh properties
+      toast.success(response?.message || 'Excursion added successfully!');
     } catch (error) {
       console.error('Failed to add excursion', error);
+      toast.error('Failed to add excursion');
+      setLoading(false); // Reset loading on error
     }
+  };
+
+  const handleEditClick = (excursion: Excursion) => {
+    setOriginalData(prev => ({ ...prev, [excursion._id]: { ...excursion } }));
+    setEditingIds(prev => new Set(prev).add(excursion._id));
+  };
+
+  const handleCancelEdit = (id: string) => {
+    if (originalData[id]) {
+      const updatedExcursions = excursions.map(exc =>
+        exc._id === id ? originalData[id] : exc
+      );
+      setExcursions(updatedExcursions);
+    }
+    setEditingIds(prev => {
+      const next = new Set(prev);
+      next.delete(id);
+      return next;
+    });
   };
 
   const handleLocalUpdate = (index: number, field: keyof Excursion, value: string) => {
     const updatedExcursions = [...excursions];
+
+    if (field === 'image') {
+      const oldUrl = updatedExcursions[index].image;
+      if (oldUrl && oldUrl !== value) handleDeleteImage(oldUrl);
+    }
+
     updatedExcursions[index] = { ...updatedExcursions[index], [field]: value };
     setExcursions(updatedExcursions);
   };
 
   const handleSaveExcursion = async (excursion: Excursion) => {
     try {
-      await updateExcursion(excursion._id, excursion);
-      alert('Excursion updated successfully!');
+      const result = await updateExcursion(excursion._id, excursion);
+      toast.success(result?.message || 'Excursion updated successfully!');
+      setEditingIds(prev => {
+        const next = new Set(prev);
+        next.delete(excursion._id);
+        return next;
+      });
     } catch (error) {
       console.error('Failed to update excursion', error);
+      toast.error('Failed to update excursion');
     }
   };
 
@@ -191,11 +282,10 @@ export function ExcursionsSection() {
 
               <div className="grid gap-2">
                 <Label htmlFor="image">Image URL</Label>
-                <Input
-                  id="image"
-                  placeholder="https://example.com/excursion-image.jpg"
+                <ImageUploadInput
                   value={formData.image}
-                  onChange={handleInputChange}
+                  onChange={handleNewImageUpdate}
+                  placeholder="https://example.com/excursion-image.jpg"
                 />
               </div>
             </div>
@@ -223,13 +313,32 @@ export function ExcursionsSection() {
                   <h4 className="font-semibold text-gray-900">Excursion {index + 1}</h4>
                 </div>
                 <div className="flex gap-2">
-                  <button
-                    onClick={() => handleSaveExcursion(excursion)}
-                    className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-all"
-                    title="Save changes"
-                  >
-                    <Save className="w-4 h-4" />
-                  </button>
+                  {editingIds.has(excursion._id) ? (
+                    <>
+                      <button
+                        onClick={() => handleCancelEdit(excursion._id)}
+                        className="p-2 text-gray-500 hover:bg-gray-100 rounded-lg transition-all"
+                        title="Cancel"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => handleSaveExcursion(excursion)}
+                        className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-all"
+                        title="Save changes"
+                      >
+                        <Save className="w-4 h-4" />
+                      </button>
+                    </>
+                  ) : (
+                    <button
+                      onClick={() => handleEditClick(excursion)}
+                      className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
+                      title="Edit"
+                    >
+                      <Edit className="w-4 h-4" />
+                    </button>
+                  )}
                   <button
                     onClick={() => handleDelete(excursion._id)}
                     className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-all"
@@ -247,7 +356,8 @@ export function ExcursionsSection() {
                     type="text"
                     value={excursion.title}
                     onChange={(e) => handleLocalUpdate(index, 'title', e.target.value)}
-                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+                    readOnly={!editingIds.has(excursion._id)}
+                    className={`w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all ${!editingIds.has(excursion._id) ? 'bg-gray-50 cursor-not-allowed' : ''}`}
                     placeholder="Enter excursion title"
                   />
                 </div>
@@ -258,7 +368,8 @@ export function ExcursionsSection() {
                     value={excursion.description}
                     onChange={(e) => handleLocalUpdate(index, 'description', e.target.value)}
                     rows={3}
-                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all resize-none"
+                    readOnly={!editingIds.has(excursion._id)}
+                    className={`w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all resize-none ${!editingIds.has(excursion._id) ? 'bg-gray-50 cursor-not-allowed' : ''}`}
                     placeholder="Enter excursion description"
                   />
                 </div>
@@ -268,7 +379,8 @@ export function ExcursionsSection() {
                     <Autocomplete
                       value={excursion.category}
                       onChange={(value) => handleLocalUpdate(index, 'category', value)}
-                      className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+                      readOnly={!editingIds.has(excursion._id)}
+                      className={`w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all ${!editingIds.has(excursion._id) ? 'bg-gray-50 cursor-not-allowed' : ''}`}
                       placeholder="e.g., Adventure"
                       options={filters.categories}
                     />
@@ -278,7 +390,8 @@ export function ExcursionsSection() {
                     <Autocomplete
                       value={excursion.destination}
                       onChange={(value) => handleLocalUpdate(index, 'destination', value)}
-                      className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+                      readOnly={!editingIds.has(excursion._id)}
+                      className={`w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all ${!editingIds.has(excursion._id) ? 'bg-gray-50 cursor-not-allowed' : ''}`}
                       placeholder="e.g., Sigiriya"
                       options={filters.destinations}
                     />
@@ -288,7 +401,8 @@ export function ExcursionsSection() {
                     <Autocomplete
                       value={excursion.time}
                       onChange={(value) => handleLocalUpdate(index, 'time', value)}
-                      className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+                      readOnly={!editingIds.has(excursion._id)}
+                      className={`w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all ${!editingIds.has(excursion._id) ? 'bg-gray-50 cursor-not-allowed' : ''}`}
                       placeholder="e.g., 5 Hours"
                       options={filters.times}
                     />
@@ -297,11 +411,10 @@ export function ExcursionsSection() {
 
                 <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-gray-700 mb-2">Image URL</label>
-                  <input
-                    type="text"
+                  <ImageUploadInput
                     value={excursion.image}
-                    onChange={(e) => handleLocalUpdate(index, 'image', e.target.value)}
-                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+                    onChange={(url) => handleLocalUpdate(index, 'image', url)}
+                    disabled={!editingIds.has(excursion._id)}
                     placeholder="https://example.com/excursion-image.jpg"
                   />
                 </div>
