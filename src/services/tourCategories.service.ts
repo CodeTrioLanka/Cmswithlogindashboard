@@ -6,6 +6,7 @@ export interface TourCategory {
     title: string;
     slug: string;
     images: string[];
+    scheduleImage?: string;
     description?: string;
     isActive: boolean;
     displayOrder: number;
@@ -55,6 +56,7 @@ class TourCategoriesService {
         formData.append('isActive', String(data.isActive));
         formData.append('displayOrder', String(data.displayOrder));
         if (data.description) formData.append('description', data.description);
+        if (data.scheduleImage !== undefined) formData.append('scheduleImage', data.scheduleImage);
 
         // Add images
         images.forEach((image) => {
@@ -96,6 +98,7 @@ class TourCategoriesService {
         if (data.description !== undefined) formData.append('description', data.description);
         if (data.isActive !== undefined) formData.append('isActive', String(data.isActive));
         if (data.displayOrder !== undefined) formData.append('displayOrder', String(data.displayOrder));
+        if (data.scheduleImage !== undefined) formData.append('scheduleImage', data.scheduleImage);
 
         // Add images if provided
         if (images && images.length > 0) {

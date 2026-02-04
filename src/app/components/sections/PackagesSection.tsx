@@ -156,12 +156,12 @@ export function PackagesSection() {
             console.log('Saving package with data:', formData);
 
             if (isAdding) {
-                const response = await packagesService.createPackage(formData as Omit<Package, '_id'>, {});
+                const response = await packagesService.createPackage(formData as Omit<Package, '_id'>);
                 console.log('Create response:', response);
                 toast.success(response.message || 'Package created successfully!');
             } else if (editingId) {
                 console.log('Updating package ID:', editingId);
-                const response = await packagesService.updatePackage(editingId, formData, {});
+                const response = await packagesService.updatePackage(editingId, formData);
                 console.log('Update response:', response);
                 toast.success(response.message || 'Package updated successfully!');
             }
@@ -196,7 +196,7 @@ export function PackagesSection() {
             itinerary: [
                 ...(formData.itinerary || []),
                 {
-                    day: (formData.itinerary?.length || 0) + 1,
+                    day: String((formData.itinerary?.length || 0) + 1),
                     title: '',
                     activities: [],
                     description: '',
@@ -210,8 +210,8 @@ export function PackagesSection() {
     const removeItineraryDay = (index: number) => {
         const newItinerary = [...(formData.itinerary || [])];
         newItinerary.splice(index, 1);
-        // Renumber days
-        newItinerary.forEach((item, idx) => item.day = idx + 1);
+        // Renumber days (convert to string)
+        newItinerary.forEach((item, idx) => item.day = String(idx + 1));
         setFormData({ ...formData, itinerary: newItinerary });
     };
 
@@ -498,8 +498,19 @@ export function PackagesSection() {
                                             <div key={index} className="bg-gray-50 dark:bg-gray-900/30 rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden shadow-sm">
                                                 <div className="flex items-center justify-between p-4 bg-white dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700">
                                                     <div className="flex items-center gap-3">
-                                                        <div className="w-10 h-10 bg-green-600 text-white rounded-full flex items-center justify-center font-bold text-lg shadow-sm">
-                                                            {day.day}
+                                                        <div className="flex items-center gap-2">
+                                                            <label className="text-xs font-bold text-gray-500 uppercase tracking-wider whitespace-nowrap">Day:</label>
+                                                            <input
+                                                                type="text"
+                                                                placeholder="1"
+                                                                value={day.day || ''}
+                                                                onChange={(e) => {
+                                                                    const newItinerary = [...(formData.itinerary || [])];
+                                                                    newItinerary[index].day = e.target.value;
+                                                                    setFormData({ ...formData, itinerary: newItinerary });
+                                                                }}
+                                                                className="w-24 px-3 py-1.5 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg font-bold text-green-700 dark:text-green-400 text-center focus:ring-2 focus:ring-green-500"
+                                                            />
                                                         </div>
                                                         <input
                                                             type="text"
