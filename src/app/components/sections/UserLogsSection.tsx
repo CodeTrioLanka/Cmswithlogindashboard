@@ -13,7 +13,7 @@ import {
     getUserLogs,
     getUniqueActions,
     type UserLog,
-} from '../../../../src/services/userLogs.service';
+} from '../../../services/userLogs.service';
 
 export function UserLogsSection() {
     const [logs, setLogs] = useState<UserLog[]>([]);
@@ -295,7 +295,8 @@ export function UserLogsSection() {
                                                 {log.username}
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm">
-                                                <span className="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-red-800">
+                                                <span className={`px-2 py-1 text-xs font-medium rounded-full ${log.role === 'admin' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'
+                                                    }`}>
                                                     {log.role}
                                                 </span>
                                             </td>

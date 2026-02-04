@@ -4,7 +4,9 @@ const BASE_URL = import.meta.env.VITE_BASE_URL || 'https://nature-escape-web-bac
 
 export const getThingsToDo = async (): Promise<ThingsToDoData | null> => {
     try {
-        const response = await fetch(`${BASE_URL}/api/things-to-do`);
+        const response = await fetch(`${BASE_URL}/api/things-to-do`, {
+            credentials: 'include'
+        });
         if (!response.ok) {
             // If 404, it might mean no data created yet, return null
             if (response.status === 404) return null;
@@ -32,6 +34,7 @@ export const createThingsToDo = async (data: ThingsToDoData): Promise<ThingsToDo
             },
             // Backend expects { data: "JSON_STRING" }
             body: JSON.stringify({ data: JSON.stringify(data) }),
+            credentials: 'include'
         });
 
         if (!response.ok) {
@@ -54,6 +57,7 @@ export const updateThingsToDo = async (id: string, data: ThingsToDoData): Promis
             },
             // Backend expects { data: "JSON_STRING" }
             body: JSON.stringify({ data: JSON.stringify(data) }),
+            credentials: 'include'
         });
 
         if (!response.ok) {

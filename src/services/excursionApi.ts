@@ -4,7 +4,9 @@ const BASE_URL = import.meta.env.VITE_BASE_URL || 'https://nature-escape-web-bac
 
 export const fetchExcursions = async (): Promise<ExcursionData | null> => {
     try {
-        const response = await fetch(`${BASE_URL}/api/excursion`);
+        const response = await fetch(`${BASE_URL}/api/excursion`, {
+            credentials: 'include'
+        });
         if (!response.ok) {
             if (response.status === 404) return null;
             throw new Error('Failed to fetch excursions');
@@ -22,7 +24,9 @@ export const fetchExcursions = async (): Promise<ExcursionData | null> => {
 
 export const fetchExcursionFilters = async () => {
     try {
-        const response = await fetch(`${BASE_URL}/api/excursion/filters`);
+        const response = await fetch(`${BASE_URL}/api/excursion/filters`, {
+            credentials: 'include'
+        });
         if (!response.ok) {
             throw new Error('Failed to fetch excursion filters');
         }
@@ -41,6 +45,7 @@ export const addExcursion = async (data: ExcursionData) => {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({ data: JSON.stringify(data) }),
+            credentials: 'include'
         });
 
         if (!response.ok) {
@@ -62,6 +67,7 @@ export const updateExcursion = async (id: string, data: ExcursionData) => {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({ data: JSON.stringify(data) }),
+            credentials: 'include'
         });
 
         if (!response.ok) {
@@ -79,6 +85,7 @@ export const deleteExcursion = async (id: string) => {
     try {
         const response = await fetch(`${BASE_URL}/api/excursion/${id}`, {
             method: 'DELETE',
+            credentials: 'include'
         });
 
         if (!response.ok) {

@@ -8,7 +8,7 @@ import { Label } from '../ui/label';
 import { Textarea } from '../ui/textarea';
 import { toast } from 'sonner';
 
-const BASE_URL = import.meta.env.VITE_BASE_URL || 'http://localhost:5000';
+const BASE_URL = import.meta.env.VITE_BASE_URL || 'https://nature-escape-web-back.vercel.app';
 
 // ============ INTERFACES ============
 interface ServiceData {
@@ -29,7 +29,9 @@ interface ServiceHeroData {
 // ============ UNIFIED API ============
 const fetchServicePageData = async (): Promise<{ hero: ServiceHeroData | null; services: ServiceData[] }> => {
   try {
-    const response = await fetch(`${BASE_URL}/api/service-page`);
+    const response = await fetch(`${BASE_URL}/api/service-page`, {
+      credentials: 'include'
+    });
     if (!response.ok) throw new Error('Failed to fetch service page data');
     const data = await response.json();
     return {

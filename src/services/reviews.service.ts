@@ -127,7 +127,9 @@ class ReviewsService {
      * Get review statistics (Public)
      */
     async getReviewStats(): Promise<ReviewStatsResponse> {
-        const response = await fetch(`${API_BASE_URL}/reviews/stats`);
+        const response = await fetch(`${API_BASE_URL}/reviews/stats`, {
+            credentials: 'include'
+        });
 
         if (!response.ok) {
             const error = await response.json();

@@ -48,7 +48,9 @@ export interface AboutUsData {
 
 export const fetchAboutUsData = async (): Promise<AboutUsData | null> => {
     try {
-        const response = await fetch(`${BASE_URL}/api/aboutus/getData`);
+        const response = await fetch(`${BASE_URL}/api/aboutus/getData`, {
+            credentials: 'include'
+        });
 
         // Handle 404 or other non-OK responses gracefully
         if (!response.ok) {
@@ -79,7 +81,8 @@ export const createAboutUsData = async (formData: FormData): Promise<AboutUsData
     try {
         const response = await fetch(`${BASE_URL}/api/aboutus/setData`, {
             method: 'POST',
-            body: formData
+            body: formData,
+            credentials: 'include'
         });
 
         if (!response.ok) {
@@ -98,7 +101,8 @@ export const updateAboutUsData = async (id: string, formData: FormData): Promise
     try {
         const response = await fetch(`${BASE_URL}/api/aboutus/${id}`, {
             method: 'PUT',
-            body: formData
+            body: formData,
+            credentials: 'include'
         });
 
         if (!response.ok) {
@@ -116,7 +120,8 @@ export const updateAboutUsData = async (id: string, formData: FormData): Promise
 export const deleteAboutUsData = async (id: string): Promise<void> => {
     try {
         const response = await fetch(`${BASE_URL}/api/aboutus/${id}`, {
-            method: 'DELETE'
+            method: 'DELETE',
+            credentials: 'include'
         });
 
         if (!response.ok) {
