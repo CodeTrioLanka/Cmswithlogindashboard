@@ -20,7 +20,7 @@ export interface Package {
         groupSize: string;
     };
     itinerary: Array<{
-        day: number;
+        day: string;
         title: string;
         activities: string[];
         description: string;

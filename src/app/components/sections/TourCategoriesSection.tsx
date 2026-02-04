@@ -17,7 +17,8 @@ export function TourCategoriesSection() {
         description: '',
         isActive: true,
         displayOrder: 0,
-        images: ['', '']
+        images: ['', ''],
+        scheduleImage: ''
     });
 
     useEffect(() => {
@@ -61,7 +62,9 @@ export function TourCategoriesSection() {
             description: '',
             isActive: true,
             displayOrder: categories.length,
-            images: ['', '']
+
+            images: ['', ''],
+            scheduleImage: ''
         });
     };
 
@@ -131,6 +134,14 @@ export function TourCategoriesSection() {
         const newImages = [...(formData.images || ['', ''])];
         newImages[index] = newUrl;
         setFormData(prev => ({ ...prev, images: newImages }));
+    };
+
+    const handleScheduleImageUpdate = async (newUrl: string) => {
+        const oldUrl = formData.scheduleImage;
+        if (oldUrl && oldUrl !== newUrl && oldUrl.includes('cloudinary')) {
+            await deleteFromCloudinary(oldUrl);
+        }
+        setFormData(prev => ({ ...prev, scheduleImage: newUrl }));
     };
 
     if (isLoading) {
@@ -272,6 +283,24 @@ export function TourCategoriesSection() {
                             </div>
                         </div>
                     </div>
+
+                    <div className="md:col-span-2">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Schedule Tour Image</label>
+                        <div className="grid grid-cols-1 gap-4">
+                            <div>
+                                <ImageUploadInput
+                                    value={formData.scheduleImage || ''}
+                                    onChange={handleScheduleImageUpdate}
+                                    placeholder="Schedule Image URL"
+                                />
+                                {formData.scheduleImage && (
+                                    <div className="image-preview-square mt-2">
+                                        <img src={formData.scheduleImage} alt="Schedule Preview" />
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
                 </div>
             )}
 
@@ -364,6 +393,24 @@ export function TourCategoriesSection() {
                                             </div>
                                         </div>
                                     </div>
+
+                                    <div className="md:col-span-2">
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Schedule Tour Image</label>
+                                        <div className="grid grid-cols-1 gap-4">
+                                            <div>
+                                                <ImageUploadInput
+                                                    value={formData.scheduleImage || ''}
+                                                    onChange={handleScheduleImageUpdate}
+                                                    placeholder="Schedule Image URL"
+                                                />
+                                                {formData.scheduleImage && (
+                                                    <div className="image-preview-square mt-2">
+                                                        <img src={formData.scheduleImage} alt="Schedule Preview" />
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </>
                         ) : (
@@ -402,12 +449,14 @@ export function TourCategoriesSection() {
                 ))}
             </div>
 
-            {categories.length === 0 && !isAdding && (
-                <div className="text-center py-12 bg-gray-50 dark:bg-gray-800 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-700">
-                    <FolderTree className="w-12 h-12 text-gray-400 dark:text-gray-500 mx-auto mb-3" />
-                    <p className="text-gray-600 dark:text-gray-400 font-medium">No tour categories yet. Click "Add Category" to create one.</p>
-                </div>
-            )}
-        </div>
+            {
+                categories.length === 0 && !isAdding && (
+                    <div className="text-center py-12 bg-gray-50 dark:bg-gray-800 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-700">
+                        <FolderTree className="w-12 h-12 text-gray-400 dark:text-gray-500 mx-auto mb-3" />
+                        <p className="text-gray-600 dark:text-gray-400 font-medium">No tour categories yet. Click "Add Category" to create one.</p>
+                    </div>
+                )
+            }
+        </div >
     );
 }
