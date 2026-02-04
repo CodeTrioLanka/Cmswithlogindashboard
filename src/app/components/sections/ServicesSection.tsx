@@ -506,8 +506,8 @@ export function ServicesSection() {
               <Briefcase className="w-5 h-5 text-green-600" />
               Services List
             </h3>
-            <span className="px-2.5 py-0.5 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 text-sm font-semibold">
-              {services.length}
+            <span className="px-2.5 py-0.5 rounded-full bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 text-sm font-semibold">
+              {services.length} items
             </span>
           </div>
 
@@ -527,7 +527,7 @@ export function ServicesSection() {
           {/* CREATE NEW SERVICE CARD */}
           {isAddingNew && (
             <div className="bg-white dark:bg-gray-800 rounded-xl border-2 border-green-400 ring-2 ring-green-100 dark:ring-green-900/20 shadow-lg p-6 relative">
-              <div className="mb-4 flex items-center gap-2 text-green-600 font-medium">
+              <div className="mb-4 flex items-center gap-2 text-black-600 font-medium">
                 <Plus className="w-5 h-5" />
                 <span>Creating New Service</span>
               </div>
