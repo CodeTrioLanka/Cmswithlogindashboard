@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react';
-import { Briefcase, Plus, Trash2, Save, X, Edit, Image } from 'lucide-react';
+import { Briefcase, Plus, Trash2, Save, X, Edit, LayoutTemplate, ImageIcon } from 'lucide-react';
 import { ImageUploadInput } from '../ui/ImageUploadInput';
 import { deleteFromCloudinary } from '../../../services/deleteApi';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '../ui/dialog';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
@@ -127,35 +126,68 @@ const deleteServiceApi = async (id: string): Promise<void> => {
   }
 };
 
+const INITIAL_HERO: ServiceHeroData = {
+  heroImage: '',
+  title: 'Our Services',
+  subtitle: 'What we offer',
+  description: 'Explore the range of services we provide.'
+};
+
 // ============ MAIN COMPONENT ============
 export function ServicesSection() {
+  // Global Loading
+  const [isLoading, setIsLoading] = useState(false);
+
   // Hero state
-  const [heroData, setHeroData] = useState<ServiceHeroData>({
-    heroImage: '',
-    title: '',
-    subtitle: '',
-    description: '',
-  });
+  const [heroData, setHeroData] = useState<ServiceHeroData>(INITIAL_HERO);
   const [originalHeroData, setOriginalHeroData] = useState<ServiceHeroData | null>(null);
   const [isHeroEditing, setIsHeroEditing] = useState(false);
   const [heroLoading, setHeroLoading] = useState(false);
 
   // Services state
   const [services, setServices] = useState<ServiceData[]>([]);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isSaving, setIsSaving] = useState<{ [key: string]: boolean }>({});
-  const [newService, setNewService] = useState<Omit<ServiceData, '_id'>>({
+
+  // Itemized Editing State
+  const [editingServiceId, setEditingServiceId] = useState<string | null>(null);
+  const [serviceDraft, setServiceDraft] = useState<ServiceData | null>(null);
+  const [isSavingService, setIsSavingService] = useState(false);
+
+  // New Service State (Inline)
+  const [isAddingNew, setIsAddingNew] = useState(false);
+  const [newServiceDraft, setNewServiceDraft] = useState<Omit<ServiceData, '_id'>>({
     title: '',
     description: '',
     image: ''
   });
+  const [isSavingNew, setIsSavingNew] = useState(false);
 
 
   // Load data on mount
   useEffect(() => {
     loadData();
   }, []);
+
+  const loadData = async () => {
+    try {
+      setIsLoading(true);
+      const data = await fetchServicePageData();
+
+      if (data.hero) {
+        setHeroData(data.hero);
+        setOriginalHeroData(data.hero);
+      } else {
+        setHeroData(INITIAL_HERO);
+        setOriginalHeroData(INITIAL_HERO);
+      }
+
+      setServices(data.services);
+    } catch (error) {
+      console.error('Failed to load services data:', error);
+      toast.error('Failed to load services data');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleDeleteImage = async (url: string) => {
     if (url && url.includes('cloudinary')) {
@@ -167,71 +199,36 @@ export function ServicesSection() {
     }
   };
 
-  const handleHeroImageUpdate = (url: string) => {
-    const oldUrl = heroData.heroImage;
-    if (oldUrl && oldUrl !== url) handleDeleteImage(oldUrl);
-    handleHeroInputChange('heroImage', url);
-  };
-
-  const handleNewServiceImageUpdate = (url: string) => {
-    const oldUrl = newService.image;
-    if (oldUrl && oldUrl !== url) handleDeleteImage(oldUrl);
-    setNewService(prev => ({ ...prev, image: url }));
-  };
-
-  const handleServiceImageUpdate = (index: number, url: string) => {
-    const oldUrl = services[index].image;
-    if (oldUrl && oldUrl !== url) handleDeleteImage(oldUrl);
-    handleLocalUpdate(index, 'image', url);
-  };
-
-  const loadData = async () => {
-    try {
-      setIsLoading(true);
-      setHeroLoading(true);
-      const data = await fetchServicePageData();
-
-      if (data.hero) {
-        setHeroData(data.hero);
-        setOriginalHeroData(data.hero);
-      }
-
-      setServices(data.services);
-    } catch (error) {
-      console.error('Failed to load services data:', error);
-      toast.error('Failed to load services data');
-    } finally {
-      setIsLoading(false);
-      setHeroLoading(false);
-    }
-  };
 
   // ============ HERO HANDLERS ============
-  const loadHeroData = async () => {
-    // This is now handled by loadData() but kept as a wrapper for hero updates
-    await loadData();
-  };
 
   const handleHeroCancel = () => {
-    setHeroData(originalHeroData || {
-      heroImage: '',
-      title: '',
-      subtitle: '',
-      description: '',
-    });
+    setHeroData(originalHeroData || INITIAL_HERO);
     setIsHeroEditing(false);
+    toast.info('Hero section changes discarded');
   };
 
   const handleHeroInputChange = (field: keyof ServiceHeroData, value: string) => {
     setHeroData(prev => ({ ...prev, [field]: value }));
   };
 
+  const handleHeroImageUpdate = (url: string) => {
+    const oldUrl = heroData.heroImage;
+    if (oldUrl && oldUrl !== url) handleDeleteImage(oldUrl);
+    handleHeroInputChange('heroImage', url);
+  };
 
   const handleHeroSave = async () => {
     try {
       setHeroLoading(true);
-      await saveServiceHero(heroData);
-      await loadHeroData();
+      if (!heroData.title) {
+        toast.error('Hero title is required');
+        return;
+      }
+
+      const savedHero = await saveServiceHero(heroData);
+      setHeroData(savedHero);
+      setOriginalHeroData(savedHero);
       setIsHeroEditing(false);
       toast.success('Hero section saved successfully!');
     } catch (error) {
@@ -242,337 +239,494 @@ export function ServicesSection() {
     }
   };
 
-  // ============ SERVICES HANDLERS ============
-  const loadServices = async () => {
-    // This is now handled by loadData() but kept as a wrapper for service updates
-    await loadData();
+
+  // ============ NEW SERVICE HANDLERS (Inline) ============
+
+  const handleStartAddService = () => {
+    setIsAddingNew(true);
+    setNewServiceDraft({ title: '', description: '', image: '' });
   };
 
-  const handleAddService = async () => {
-    if (!newService.title || !newService.description) {
-      toast.error('Please fill in all required fields');
+  const handleCancelAddService = () => {
+    // Optional: cleanup image if uploaded and strictly managed
+    setIsAddingNew(false);
+    setNewServiceDraft({ title: '', description: '', image: '' });
+  };
+
+  const handleNewServiceUpdate = (field: keyof Omit<ServiceData, '_id'>, value: string) => {
+    setNewServiceDraft(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleNewServiceImageUpdate = (url: string) => {
+    const oldUrl = newServiceDraft.image;
+    if (oldUrl && oldUrl !== url) handleDeleteImage(oldUrl);
+    handleNewServiceUpdate('image', url);
+  };
+
+  const handleSaveNewService = async () => {
+    if (!newServiceDraft.title || !newServiceDraft.description) {
+      toast.error('Title and Description are required');
       return;
     }
+
     try {
-      setIsLoading(true);
-      await addServiceApi(newService);
-      setNewService({ title: '', description: '', image: '' });
-      setIsDialogOpen(false);
-      await loadServices();
+      setIsSavingNew(true);
+      await addServiceApi(newServiceDraft);
+
+      // Cleanup and Reload
+      setNewServiceDraft({ title: '', description: '', image: '' });
+      setIsAddingNew(false);
+      await loadData(); // Reload list to get the new ID and consistent state
       toast.success('Service created successfully!');
     } catch (error) {
       console.error('Failed to create service:', error);
       toast.error('Failed to create service');
     } finally {
-      setIsLoading(false);
+      setIsSavingNew(false);
+    }
+  };
+
+
+  // ============ EXISTING SERVICE HANDLERS (Itemized) ============
+
+  const handleStartEditService = (service: ServiceData) => {
+    setServiceDraft({ ...service });
+    setEditingServiceId(service._id || null);
+  };
+
+  const handleCancelEditService = () => {
+    setServiceDraft(null);
+    setEditingServiceId(null);
+  };
+
+  const handleDraftUpdate = (field: keyof ServiceData, value: string) => {
+    if (!serviceDraft) return;
+    setServiceDraft({ ...serviceDraft, [field]: value });
+  };
+
+  const handleDraftImageUpdate = (url: string) => {
+    if (!serviceDraft) return;
+    const oldUrl = serviceDraft.image;
+    if (oldUrl && oldUrl !== url) handleDeleteImage(oldUrl);
+    handleDraftUpdate('image', url);
+  };
+
+  const handleSaveService = async () => {
+    if (!serviceDraft || !serviceDraft._id) return;
+    if (!serviceDraft.title || !serviceDraft.description) {
+      toast.error('Title and Description are required');
+      return;
+    }
+
+    try {
+      setIsSavingService(true);
+      await updateServiceApi(serviceDraft._id, serviceDraft);
+
+      await loadData(); // Refresh list
+      setServiceDraft(null);
+      setEditingServiceId(null);
+      toast.success('Service updated successfully!');
+    } catch (error) {
+      console.error('Failed to update service:', error);
+      toast.error('Failed to update service');
+    } finally {
+      setIsSavingService(false);
     }
   };
 
   const handleRemoveService = async (id: string) => {
     if (!confirm('Are you sure you want to delete this service?')) return;
+
+    // Optimistic UI update could be done here, but since we rely on separate API,
+    // safest is to just delete and reload.
+    // If we want to block UI:
+    const originalServices = [...services];
+
     try {
-      console.log('Deleting service:', id);
+      // Optimistic remove for snapiness
+      setServices(prev => prev.filter(s => s._id !== id));
+
       await deleteServiceApi(id);
-      await loadServices();
       toast.success('Service deleted successfully!');
     } catch (error) {
+      // Revert if failed
+      setServices(originalServices);
       console.error('Failed to delete service:', error);
       toast.error('Failed to delete service');
     }
   };
 
-  const handleLocalUpdate = (index: number, field: keyof ServiceData, value: string) => {
-    const updatedServices = [...services];
-    updatedServices[index] = { ...updatedServices[index], [field]: value };
-    setServices(updatedServices);
-  };
 
-  const handleSaveService = async (service: ServiceData) => {
-    console.log('handleSaveService triggered for:', service);
-    if (!service._id) {
-      console.error('Cannot save service: missing _id', service);
-      toast.error('Cannot save: Service ID missing');
-      return;
-    }
+  // ============ RENDER ============
 
-    try {
-      setIsSaving(prev => ({ ...prev, [service._id!]: true }));
-
-      console.log('Sending update to API...');
-
-      // Sanitize service data to ensure we only send what's needed
-      const servicePayload = {
-        title: service.title,
-        description: service.description,
-        image: service.image
-      };
-
-      const updatedService = await updateServiceApi(service._id, servicePayload);
-      console.log('API Response:', updatedService);
-
-      // Reload is important to get the authoritative state back
-      await loadServices();
-      toast.success('Service updated successfully!');
-    } catch (error) {
-      console.error('Failed to update service:', error);
-      toast.error(`Failed to update service: ${error instanceof Error ? error.message : 'Unknown error'}`);
-    } finally {
-      setIsSaving(prev => ({ ...prev, [service._id!]: false }));
-    }
-  };
+  if (isLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center h-64 space-y-4">
+        <div className="w-10 h-10 border-4 border-green-600 border-t-transparent rounded-full animate-spin"></div>
+        <p className="text-gray-500 dark:text-gray-400">Loading Services content...</p>
+      </div>
+    );
+  }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 pb-20">
 
-      {/* ============ SERVICES HERO SECTION ============ */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-        <div className="flex justify-between items-center mb-6">
+      {/* ============ HERO SECTION ============ */}
+      <div className={`bg-white dark:bg-gray-800 rounded-xl shadow-sm border transition-colors ${isHeroEditing ? 'border-green-400 ring-1 ring-green-400' : 'border-gray-200 dark:border-gray-700'} overflow-hidden`}>
+        <div className="bg-gray-50 dark:bg-gray-700/50 px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between gap-2">
           <div className="flex items-center gap-2">
-            <Image className="w-5 h-5 text-green-600" />
-            <h3 className="text-lg font-semibold text-gray-900">Services Hero Section</h3>
+            <LayoutTemplate className="w-5 h-5 text-green-600" />
+            <h4 className="font-semibold text-gray-900 dark:text-white">Hero Section</h4>
           </div>
+          {/* Actions */}
           <div className="flex gap-2">
-            {isHeroEditing && (
-              <button
-                onClick={handleHeroCancel}
-                disabled={heroLoading}
-                className="flex items-center gap-2 px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 disabled:opacity-50 transition-all"
+            {isHeroEditing ? (
+              <>
+                <Button
+                  onClick={handleHeroCancel}
+                  disabled={heroLoading}
+                  variant="ghost"
+                  size="sm"
+                  className="text-red-500 hover:text-red-600 hover:bg-red-50"
+                >
+                  <X className="w-4 h-4 mr-1" /> Cancel
+                </Button>
+                <Button
+                  onClick={handleHeroSave}
+                  disabled={heroLoading}
+                  size="sm"
+                  className="bg-green-600 hover:bg-green-700 text-white"
+                >
+                  {heroLoading ? (
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  ) : (
+                    <>
+                      <Save className="w-4 h-4 mr-1" /> Save
+                    </>
+                  )}
+                </Button>
+              </>
+            ) : (
+              <Button
+                onClick={() => setIsHeroEditing(true)}
+                variant="outline"
+                size="sm"
+                className="gap-2"
+                disabled={!!editingServiceId || isAddingNew}
               >
-                <X className="w-4 h-4" />
-                Cancel
-              </button>
+                <Edit className="w-4 h-4" /> Edit
+              </Button>
             )}
-            <button
-              onClick={isHeroEditing ? handleHeroSave : () => setIsHeroEditing(true)}
-              disabled={heroLoading}
-              className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 transition-all"
-            >
-              {isHeroEditing ? <Save className="w-4 h-4" /> : <Edit className="w-4 h-4" />}
-              {heroLoading ? 'Saving...' : isHeroEditing ? 'Save' : 'Edit'}
-            </button>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Hero Image */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Hero Image</label>
-            <div className="mb-2">
-              <ImageUploadInput
-                value={heroData.heroImage}
-                onChange={handleHeroImageUpdate}
-                disabled={!isHeroEditing}
-                placeholder="Hero image URL"
-              />
-            </div>
-            {heroData.heroImage && (
-              <div className="image-preview-large">
-                <img
-                  src={heroData.heroImage}
-                  alt="Hero preview"
-                />
-              </div>
-            )}
-          </div>
-
-          {/* Hero Text Fields */}
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Title</label>
-              <input
-                type="text"
+        <div className="p-6 grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div className="space-y-5">
+            <div className="grid gap-2">
+              <Label htmlFor="hero-title">Page Title</Label>
+              <Input
+                id="hero-title"
                 value={heroData.title}
                 onChange={(e) => handleHeroInputChange('title', e.target.value)}
-                readOnly={!isHeroEditing}
-                className={`w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all ${!isHeroEditing ? 'bg-gray-50 cursor-not-allowed' : ''}`}
                 placeholder="Enter hero title"
+                disabled={!isHeroEditing}
+                className="font-semibold text-lg"
               />
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Subtitle</label>
-              <input
-                type="text"
+            <div className="grid gap-2">
+              <Label htmlFor="hero-subtitle">Subtitle</Label>
+              <Input
+                id="hero-subtitle"
                 value={heroData.subtitle}
                 onChange={(e) => handleHeroInputChange('subtitle', e.target.value)}
-                readOnly={!isHeroEditing}
-                className={`w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all ${!isHeroEditing ? 'bg-gray-50 cursor-not-allowed' : ''}`}
                 placeholder="Enter hero subtitle"
+                disabled={!isHeroEditing}
               />
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
-              <textarea
+            <div className="grid gap-2">
+              <Label htmlFor="hero-desc">Description</Label>
+              <Textarea
+                id="hero-desc"
                 value={heroData.description}
                 onChange={(e) => handleHeroInputChange('description', e.target.value)}
-                readOnly={!isHeroEditing}
-                rows={4}
-                className={`w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all resize-none ${!isHeroEditing ? 'bg-gray-50 cursor-not-allowed' : ''}`}
                 placeholder="Enter hero description"
+                rows={4}
+                disabled={!isHeroEditing}
+                className="resize-none"
               />
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            <Label>Hero Background Image</Label>
+            <div className={`border-2 border-dashed rounded-xl p-4 transition-colors ${isHeroEditing ? 'border-gray-300 hover:border-green-400 bg-gray-50' : 'border-gray-200'}`}>
+              {heroData.heroImage ? (
+                <div className="space-y-3">
+                  <div className="relative aspect-video w-full overflow-hidden rounded-lg shadow-sm">
+                    <img
+                      src={heroData.heroImage}
+                      alt="Hero"
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <div className="flex gap-2">
+                    <Input
+                      value={heroData.heroImage}
+                      readOnly
+                      className="text-xs text-gray-500 bg-white"
+                    />
+                  </div>
+                </div>
+              ) : (
+                <div className="h-48 flex flex-col items-center justify-center text-gray-400 gap-2">
+                  <ImageIcon className="w-10 h-10 opacity-50" />
+                  <span className="text-sm">No image selected</span>
+                </div>
+              )}
+
+              {isHeroEditing && (
+                <div className="mt-4">
+                  <ImageUploadInput
+                    value={heroData.heroImage}
+                    onChange={handleHeroImageUpdate}
+                    placeholder="Paste URL or Upload New Image"
+                  />
+                </div>
+              )}
             </div>
           </div>
         </div>
       </div>
 
       {/* ============ SERVICES LIST SECTION ============ */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-        <div className="flex justify-between items-center mb-6">
-          <div>
-            <div className="flex items-center gap-2">
+      <div className="space-y-6">
+        <div className="flex justify-between items-center px-2 border-b border-gray-200 dark:border-gray-700 pb-4">
+          <div className="flex items-center gap-3">
+            <h3 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
               <Briefcase className="w-5 h-5 text-green-600" />
-              <h3 className="text-lg font-semibold text-gray-900">Services List</h3>
-            </div>
-            <p className="text-sm text-gray-600 mt-1">Manage your service offerings</p>
+              Services List
+            </h3>
+            <span className="px-2.5 py-0.5 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 text-sm font-semibold">
+              {services.length}
+            </span>
           </div>
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogTrigger asChild>
-              <button className="inline-flex items-center gap-2 px-4 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all shadow-md font-medium">
-                <Plus className="w-4 h-4" />
-                Add Service
-              </button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[500px]">
-              <DialogHeader>
-                <DialogTitle>Add New Service</DialogTitle>
-                <DialogDescription>
-                  Fill in the details below to add a new service to your offerings.
-                </DialogDescription>
-              </DialogHeader>
-              <div className="grid gap-4 py-4">
-                <div className="grid gap-2">
-                  <Label htmlFor="title">Service Title *</Label>
-                  <Input
-                    id="title"
-                    placeholder="Enter service title"
-                    value={newService.title}
-                    onChange={(e) => setNewService({ ...newService, title: e.target.value })}
+
+          {!isHeroEditing && !editingServiceId && !isAddingNew && (
+            <Button
+              onClick={handleStartAddService}
+              className="bg-green-600 hover:bg-green-700 text-white shadow-sm"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Add Service
+            </Button>
+          )}
+        </div>
+
+        <div className="grid grid-cols-1 gap-6">
+
+          {/* CREATE NEW SERVICE CARD */}
+          {isAddingNew && (
+            <div className="bg-white dark:bg-gray-800 rounded-xl border-2 border-green-400 ring-2 ring-green-100 dark:ring-green-900/20 shadow-lg p-6 relative">
+              <div className="mb-4 flex items-center gap-2 text-green-600 font-medium">
+                <Plus className="w-5 h-5" />
+                <span>Creating New Service</span>
+              </div>
+              <div className="flex flex-col md:flex-row gap-6">
+                {/* Image Area */}
+                <div className="w-full md:w-64 flex-shrink-0 space-y-3">
+                  <div className="aspect-[4/3] rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 relative">
+                    {newServiceDraft.image ? (
+                      <img
+                        src={newServiceDraft.image}
+                        alt="Preview"
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-gray-400">
+                        <ImageIcon className="w-10 h-10 opacity-50" />
+                      </div>
+                    )}
+                  </div>
+                  <ImageUploadInput
+                    value={newServiceDraft.image}
+                    onChange={handleNewServiceImageUpdate}
+                    placeholder="Image URL"
+                    className="text-xs"
                   />
                 </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="description">Description *</Label>
-                  <Textarea
-                    id="description"
-                    placeholder="Enter service description"
-                    value={newService.description}
-                    onChange={(e) => setNewService({ ...newService, description: e.target.value })}
-                  />
-                </div>
-                <div className="grid gap-2">
-                  <Label>Service Image</Label>
-                  <div className="mb-2">
-                    <ImageUploadInput
-                      value={newService.image}
-                      onChange={handleNewServiceImageUpdate}
-                      placeholder="Image URL"
+
+                {/* Form Area */}
+                <div className="flex-1 space-y-4">
+                  <div className="space-y-2">
+                    <Label className="text-xs font-semibold text-gray-500 uppercase">Title <span className="text-red-500">*</span></Label>
+                    <Input
+                      value={newServiceDraft.title}
+                      onChange={(e) => handleNewServiceUpdate('title', e.target.value)}
+                      placeholder="Service Title"
+                      className="text-lg font-semibold"
+                      autoFocus
                     />
                   </div>
-                  {newService.image && (
-                    <div className="image-preview-medium mt-2">
-                      <img
-                        src={newService.image}
-                        alt="Preview"
+                  <div className="space-y-2">
+                    <Label className="text-xs font-semibold text-gray-500 uppercase">Description <span className="text-red-500">*</span></Label>
+                    <Textarea
+                      value={newServiceDraft.description}
+                      onChange={(e) => handleNewServiceUpdate('description', e.target.value)}
+                      placeholder="Description..."
+                      rows={4}
+                      className="resize-none"
+                    />
+                  </div>
+
+                  <div className="flex justify-end gap-3 pt-4">
+                    <Button
+                      variant="ghost"
+                      onClick={handleCancelAddService}
+                      disabled={isSavingNew}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      onClick={handleSaveNewService}
+                      disabled={isSavingNew}
+                      className="bg-green-600 hover:bg-green-700 text-white min-w-[100px]"
+                    >
+                      {isSavingNew ? 'Saving...' : 'Save New Item'}
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {services.length === 0 && !isAddingNew && (
+            <div className="flex flex-col items-center justify-center py-12 bg-white dark:bg-gray-800 rounded-xl border border-dashed border-gray-300 dark:border-gray-700">
+              <Briefcase className="w-8 h-8 text-gray-400 mb-2" />
+              <p className="text-gray-500">No services found.</p>
+            </div>
+          )}
+
+          {/* SERVICE ITEMS */}
+          {services.map((service, index) => {
+            const isEditingThis = editingServiceId === service._id;
+            const dataToRender = isEditingThis && serviceDraft ? serviceDraft : service;
+
+            // Skip rendering this item if it's being deleted optimistically 
+            // (though our logic above doesn't really remove it from 'services' state until confirmed, unless we added that optimistic logic)
+
+            return (
+              <div
+                key={service._id || index}
+                className={`group bg-white dark:bg-gray-800 rounded-xl border transition-all p-6 relative
+                   ${isEditingThis ? 'border-green-400 ring-2 ring-green-100 shadow-md' : 'border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md'}
+                 `}
+              >
+                <div className="flex flex-col md:flex-row gap-6">
+                  {/* Image Area */}
+                  <div className="w-full md:w-64 flex-shrink-0 space-y-3">
+                    <div className="aspect-[4/3] rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 relative">
+                      {dataToRender.image ? (
+                        <img
+                          src={dataToRender.image}
+                          alt={dataToRender.title}
+                          className={`w-full h-full object-cover transition-transform ${!isEditingThis && 'group-hover:scale-105'}`}
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-gray-400">
+                          <ImageIcon className="w-10 h-10 opacity-50" />
+                        </div>
+                      )}
+                    </div>
+                    {isEditingThis && (
+                      <ImageUploadInput
+                        value={dataToRender.image}
+                        onChange={handleDraftImageUpdate}
+                        placeholder="Change Image URL"
+                        className="text-xs"
                       />
+                    )}
+                  </div>
+
+                  {/* Content Area */}
+                  <div className="flex-1 space-y-4">
+                    <div className="space-y-2">
+                      <Label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Title</Label>
+                      {isEditingThis ? (
+                        <Input
+                          value={dataToRender.title}
+                          onChange={(e) => handleDraftUpdate('title', e.target.value)}
+                          className="text-lg font-semibold"
+                        />
+                      ) : (
+                        <h4 className="text-lg font-semibold text-gray-900 dark:text-white">{dataToRender.title}</h4>
+                      )}
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Description</Label>
+                      {isEditingThis ? (
+                        <Textarea
+                          value={dataToRender.description}
+                          onChange={(e) => handleDraftUpdate('description', e.target.value)}
+                          rows={4}
+                          className="resize-none"
+                        />
+                      ) : (
+                        <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed whitespace-pre-wrap">
+                          {dataToRender.description}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Edit Actions */}
+                    {isEditingThis && (
+                      <div className="flex justify-end gap-3 pt-4 border-t border-gray-100 dark:border-gray-700 mt-2">
+                        <Button
+                          variant="ghost"
+                          onClick={handleCancelEditService}
+                          disabled={isSavingService}
+                          size="sm"
+                        >
+                          Cancel
+                        </Button>
+                        <Button
+                          onClick={handleSaveService}
+                          disabled={isSavingService}
+                          size="sm"
+                          className="bg-green-600 hover:bg-green-700 text-white"
+                        >
+                          {isSavingService ? 'Saving...' : 'Save Changes'}
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* View Actions */}
+                  {!isEditingThis && !isHeroEditing && !isAddingNew && !editingServiceId && (
+                    <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => handleStartEditService(service)}
+                        className="shadow-sm"
+                      >
+                        <Edit className="w-4 h-4 mr-1" /> Edit
+                      </Button>
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => service._id && handleRemoveService(service._id)}
+                        className="shadow-sm"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
                     </div>
                   )}
                 </div>
               </div>
-              <DialogFooter>
-                <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
-                  Cancel
-                </Button>
-                <Button onClick={handleAddService} disabled={isLoading}>
-                  {isLoading ? 'Saving...' : 'Save Service'}
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
+            );
+          })}
+
         </div>
-
-        {isLoading && services.length === 0 ? (
-          <div className="text-center py-12 text-gray-500">Loading services...</div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {services.map((service, index) => (
-              <div key={service._id || index} className="bg-gray-50 rounded-xl border border-gray-200 p-5">
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex items-center gap-2">
-                    <Briefcase className="w-4 h-4 text-green-600" />
-                    <h4 className="font-semibold text-gray-900">Service {index + 1}</h4>
-                  </div>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => handleSaveService(service)}
-                      disabled={isSaving[service._id || '']}
-                      className="p-2 text-green-600 hover:bg-green-100 rounded-lg transition-all disabled:opacity-50"
-                      title="Save changes"
-                    >
-                      {isSaving[service._id || ''] ? (
-                        <div className="w-4 h-4 border-2 border-green-600 border-t-transparent rounded-full animate-spin" />
-                      ) : (
-                        <Save className="w-4 h-4" />
-                      )}
-                    </button>
-                    <button
-                      onClick={() => service._id && handleRemoveService(service._id)}
-                      className="p-2 text-red-600 hover:bg-red-100 rounded-lg transition-all"
-                      title="Remove service"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
-
-                <div className="space-y-3">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
-                    <input
-                      type="text"
-                      value={service.title}
-                      onChange={(e) => handleLocalUpdate(index, 'title', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all text-sm"
-                      placeholder="Service title"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-                    <textarea
-                      value={service.description}
-                      onChange={(e) => handleLocalUpdate(index, 'description', e.target.value)}
-                      rows={2}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all resize-none text-sm"
-                      placeholder="Service description"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Image</label>
-                    <div className="mb-2">
-                      <ImageUploadInput
-                        value={service.image || ''}
-                        onChange={(url) => handleServiceImageUpdate(index, url)}
-                        placeholder="Image URL"
-                      />
-                    </div>
-                    {service.image && (
-                      <div className="image-preview-small mt-2">
-                        <img
-                          src={service.image}
-                          alt="Service preview"
-                        />
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            ))}
-            {services.length === 0 && (
-              <div className="col-span-1 md:col-span-2 text-center py-12 text-gray-500 bg-gray-50 rounded-xl border border-dashed border-gray-300">
-                No services added yet. Click "Add Service" to get started.
-              </div>
-            )}
-          </div>
-        )}
       </div>
     </div>
   );
