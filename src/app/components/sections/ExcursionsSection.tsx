@@ -217,28 +217,30 @@ export function ExcursionsSection({ data: _initialData, onChange: _onChange }: E
 
   return (
     <div className="space-y-8 pb-10">
-      <div className="flex justify-between items-center sticky top-0 bg-gray-50 py-4 z-10 border-b border-gray-200 -mx-8 px-8 backdrop-blur-sm bg-opacity-90">
-        <div>
-          <h3 className="text-xl font-bold text-gray-900">Excursions Page</h3>
-          <p className="text-sm text-gray-600">Manage hero section and excursion activities</p>
+      <div className="sticky top-0 bg-gray-50/90 dark:bg-gray-900/90 py-4 z-10 border-b border-gray-200 dark:border-gray-700 -mx-4 lg:-mx-8 px-4 lg:px-8 backdrop-blur-sm transition-colors duration-200">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div>
+            <h3 className="text-xl font-bold text-gray-900 dark:text-white">Excursions Page</h3>
+            <p className="text-sm text-gray-600 dark:text-gray-400">Manage hero section and excursion activities</p>
+          </div>
+          <Button
+            onClick={handleSaveAll}
+            disabled={isSaving}
+            className="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white gap-2 shadow-md transition-all active:scale-95"
+          >
+            {isSaving ? (
+              <>
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                <span>Saving...</span>
+              </>
+            ) : (
+              <>
+                <Save className="w-4 h-4" />
+                <span>Save Changes</span>
+              </>
+            )}
+          </Button>
         </div>
-        <Button
-          onClick={handleSaveAll}
-          disabled={isSaving}
-          className="bg-green-600 hover:bg-green-700 text-white gap-2"
-        >
-          {isSaving ? (
-            <>
-              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-              Saving...
-            </>
-          ) : (
-            <>
-              <Save className="w-4 h-4" />
-              Save Changes
-            </>
-          )}
-        </Button>
       </div>
 
       {/* Hero Section */}

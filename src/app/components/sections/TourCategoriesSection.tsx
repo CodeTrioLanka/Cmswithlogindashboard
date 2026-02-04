@@ -139,7 +139,7 @@ export function TourCategoriesSection() {
 
     return (
         <div className="space-y-6">
-            <div className="flex justify-between items-center">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
                     <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Tour Categories</h3>
                     <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Manage tour categories like Beach, Cultural, Honeymoon, etc.</p>
@@ -147,7 +147,7 @@ export function TourCategoriesSection() {
                 {!isAdding && (
                     <button
                         onClick={handleAdd}
-                        className="inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-green-700 to-emerald-600 text-white rounded-lg hover:from-green-800 hover:to-emerald-700 transition-all shadow-md font-medium"
+                        className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-green-700 to-emerald-600 text-white rounded-lg hover:from-green-800 hover:to-emerald-700 transition-all shadow-md font-medium"
                     >
                         <Plus className="w-4 h-4" />
                         Add Category
@@ -157,23 +157,23 @@ export function TourCategoriesSection() {
 
             {/* Add Form */}
             {isAdding && (
-                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-                    <div className="flex items-center justify-between mb-5">
+                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 animate-in fade-in slide-in-from-top-4 duration-300">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
                         <div className="flex items-center gap-2">
                             <FolderTree className="w-5 h-5 text-green-600 dark:text-green-500" />
                             <h4 className="font-semibold text-gray-900 dark:text-white">New Category</h4>
                         </div>
-                        <div className="flex gap-2">
+                        <div className="flex w-full sm:w-auto gap-2">
                             <button
                                 onClick={handleSave}
-                                className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all"
+                                className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all"
                             >
                                 <Save className="w-4 h-4" />
                                 Save
                             </button>
                             <button
                                 onClick={handleCancel}
-                                className="inline-flex items-center gap-2 px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-all font-medium"
+                                className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-all font-medium"
                             >
                                 <X className="w-4 h-4" />
                                 Cancel
@@ -282,14 +282,14 @@ export function TourCategoriesSection() {
                         {editingId === category._id ? (
                             // Edit mode
                             <>
-                                <div className="flex items-center justify-between mb-5">
+                                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
                                     <h4 className="font-semibold text-gray-900 dark:text-white">Edit Category</h4>
-                                    <div className="flex gap-2">
-                                        <button onClick={handleSave} className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+                                    <div className="flex w-full sm:w-auto gap-2">
+                                        <button onClick={handleSave} className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
                                             <Save className="w-4 h-4" />
                                             Save
                                         </button>
-                                        <button onClick={handleCancel} className="inline-flex items-center gap-2 px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-all font-medium">
+                                        <button onClick={handleCancel} className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-all font-medium">
                                             <X className="w-4 h-4" />
                                             Cancel
                                         </button>
@@ -379,9 +379,9 @@ export function TourCategoriesSection() {
                                         </div>
                                         <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">Slug: <code className="bg-gray-100 dark:bg-gray-900/50 px-2 py-1 rounded">{category.slug}</code></p>
                                         {category.description && <p className="text-sm text-gray-700 dark:text-gray-300 mb-4">{category.description}</p>}
-                                        <div className="flex gap-3">
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                                             {category.images.map((img, idx) => (
-                                                <div key={idx} className="image-preview-square">
+                                                <div key={idx} className="image-preview-square !max-w-full">
                                                     <img src={img} alt={`${category.title} ${idx + 1}`} />
                                                 </div>
                                             ))}

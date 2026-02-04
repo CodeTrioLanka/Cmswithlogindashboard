@@ -225,7 +225,7 @@ export function PackagesSection() {
 
     return (
         <div className="space-y-6">
-            <div className="flex justify-between items-center">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
                     <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Tour Packages</h3>
                     <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Manage comprehensive tour packages with detailed itineraries</p>
@@ -233,7 +233,7 @@ export function PackagesSection() {
                 {!isAdding && !editingId && (
                     <button
                         onClick={handleAdd}
-                        className="inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-green-700 to-emerald-600 text-white rounded-lg hover:from-green-800 hover:to-emerald-700 transition-all shadow-md font-medium"
+                        className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-green-700 to-emerald-600 text-white rounded-lg hover:from-green-800 hover:to-emerald-700 transition-all shadow-md font-medium"
                     >
                         <Plus className="w-4 h-4" />
                         Add Package
@@ -245,9 +245,9 @@ export function PackagesSection() {
             {(isAdding || editingId) && (
                 <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
                     {/* Form Header */}
-                    <div className="flex items-center justify-between p-6 border-b border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/20">
+                    <div className="flex flex-col md:flex-row items-start md:items-center justify-between p-6 border-b border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/20 gap-4">
                         <div className="flex items-center gap-3">
-                            <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg">
+                            <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg shrink-0">
                                 <PackageIcon className="w-6 h-6 text-green-700 dark:text-green-500" />
                             </div>
                             <div>
@@ -259,28 +259,28 @@ export function PackagesSection() {
                                 </p>
                             </div>
                         </div>
-                        <div className="flex gap-3">
+                        <div className="flex w-full md:w-auto gap-3">
                             <button
                                 onClick={handleCancel}
-                                className="inline-flex items-center gap-2 px-4 py-2 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-all font-medium"
+                                className="flex-1 md:flex-none inline-flex items-center justify-center gap-2 px-4 py-2 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-all font-medium"
                             >
                                 <X className="w-4 h-4" />
-                                Cancel
+                                <span className="sm:inline">Cancel</span>
                             </button>
                             <button
                                 onClick={handleSave}
-                                className="inline-flex items-center gap-2 px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all shadow-md font-semibold"
+                                className="flex-1 md:flex-none inline-flex items-center justify-center gap-2 px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all shadow-md font-semibold"
                             >
                                 <Save className="w-4 h-4" />
-                                Save Changes
+                                <span className="sm:inline">Save</span>
                             </button>
                         </div>
                     </div>
 
                     <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                        <div className="px-6 pt-4 border-b border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800">
-                            <TabsList className="bg-gray-100 dark:bg-gray-900/50 p-1 mb-0 border-b-0 w-full md:w-auto h-auto">
-                                <TabsTrigger value="general" className="px-5 py-2.5 rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-gray-800 dark:data-[state=active]:text-green-500 data-[state=active]:text-green-600">
+                        <div className="px-6 pt-4 border-b border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 overflow-x-auto scrollbar-hide">
+                            <TabsList className="bg-gray-100 dark:bg-gray-900/50 p-1 mb-0 border-b-0 w-max md:w-auto h-auto min-w-full md:min-w-0">
+                                <TabsTrigger value="general" className="whitespace-nowrap px-5 py-2.5 rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-gray-800 dark:data-[state=active]:text-green-500 data-[state=active]:text-green-600">
                                     <Settings className="w-4 h-4" />
                                     General Info
                                 </TabsTrigger>

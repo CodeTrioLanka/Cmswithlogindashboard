@@ -38,7 +38,9 @@ export function ContactSection() {
   useEffect(() => {
     const fetchContactData = async () => {
       try {
-        const response = await fetch(`${BASE_URL}/api/contactus`);
+        const response = await fetch(`${BASE_URL}/api/contactus`, {
+          credentials: 'include'
+        });
         if (response.ok) {
           const data = await response.json();
           // Ensure we have the structure even if some fields are missing from backend
@@ -108,26 +110,26 @@ export function ContactSection() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Contact Settings</h2>
-        <div className="flex gap-2">
+        <div className="flex w-full sm:w-auto gap-2">
           {isEditing && (
             <button
               onClick={() => setIsEditing(false)}
               disabled={loading}
-              className="inline-flex items-center gap-2 px-4 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all shadow-md font-medium"
+              className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all shadow-md font-medium"
             >
               <X className="w-4 h-4" />
-              Cancel
+              <span>Cancel</span>
             </button>
           )}
           <button
             onClick={isEditing ? handleSave : () => setIsEditing(true)}
             disabled={loading}
-            className="inline-flex items-center gap-2 px-4 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all shadow-md font-medium"
+            className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all shadow-md font-medium"
           >
             {isEditing ? <Save className="w-4 h-4" /> : <Edit className="w-4 h-4" />}
-            {loading ? "Saving..." : isEditing ? "Save" : "Edit"}
+            <span>{loading ? "Saving..." : isEditing ? "Save" : "Edit"}</span>
           </button>
         </div>
       </div>

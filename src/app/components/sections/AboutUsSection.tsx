@@ -239,18 +239,18 @@ export function AboutUsSection() {
   }
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-      <div className="flex items-center justify-between mb-6">
+    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
         <div className="flex items-center gap-2">
           <Info className="w-5 h-5 text-green-600" />
           <h3 className="text-lg font-semibold text-gray-900">About Us Content</h3>
         </div>
-        <div className="flex gap-2">
+        <div className="flex w-full sm:w-auto gap-2">
           {isEditing && (
             <button
               onClick={handleCancel}
               disabled={saving}
-              className="flex items-center gap-2 px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 disabled:opacity-50 transition-all"
+              className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 disabled:opacity-50 transition-all"
             >
               <X className="w-4 h-4" />
               Cancel
@@ -259,22 +259,22 @@ export function AboutUsSection() {
           <button
             onClick={isEditing ? handleSave : () => setIsEditing(true)}
             disabled={saving}
-            className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {saving ? (
               <>
                 <Loader2 className="w-4 h-4 animate-spin" />
-                Saving...
+                <span className="sm:inline">Saving...</span>
               </>
             ) : isEditing ? (
               <>
                 <Save className="w-4 h-4" />
-                Save Changes
+                <span className="sm:inline">Save</span>
               </>
             ) : (
               <>
                 <Edit className="w-4 h-4" />
-                Edit
+                <span className="sm:inline">Edit</span>
               </>
             )}
           </button>
@@ -614,7 +614,7 @@ export function AboutUsSection() {
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">Profile Image</label>
-                      <div className="flex items-center gap-4">
+                      <div className="flex flex-col sm:flex-row items-center gap-4">
                         <ImageUploadInput
                           value={member.image}
                           onChange={(url) => handleTeamImageUpdate(index, url)}
@@ -622,7 +622,7 @@ export function AboutUsSection() {
                           placeholder="Team Member Image URL"
                         />
                         {member.image && (
-                          <div className="image-preview-square">
+                          <div className="image-preview-square shrink-0">
                             <img
                               src={member.image}
                               alt={member.name}

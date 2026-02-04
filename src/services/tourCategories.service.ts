@@ -15,13 +15,17 @@ export interface TourCategory {
 
 class TourCategoriesService {
     async getTourCategories(): Promise<{ tours: TourCategory[] }> {
-        const response = await fetch(`${API_BASE_URL}/tours`);
+        const response = await fetch(`${API_BASE_URL}/tours`, {
+            credentials: 'include'
+        });
         if (!response.ok) throw new Error('Failed to fetch tour categories');
         return response.json();
     }
 
     async getTourCategoryById(id: string): Promise<{ tour: TourCategory }> {
-        const response = await fetch(`${API_BASE_URL}/tours/${id}`);
+        const response = await fetch(`${API_BASE_URL}/tours/${id}`, {
+            credentials: 'include'
+        });
         if (!response.ok) throw new Error('Failed to fetch tour category');
         return response.json();
     }

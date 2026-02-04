@@ -59,18 +59,22 @@ class PackagesService {
     }
 
     async getPackages(): Promise<{ packages: Package[] }> {
-        const response = await fetch(`${API_BASE_URL}/packages`);
+        const response = await fetch(`${API_BASE_URL}/packages`, {
+            credentials: 'include'
+        });
         if (!response.ok) throw new Error('Failed to fetch packages');
         return response.json();
     }
 
     async getPackageBySlug(slug: string): Promise<Package> {
-        const response = await fetch(`${API_BASE_URL}/packages/slug/${slug}`);
+        const response = await fetch(`${API_BASE_URL}/packages/slug/${slug}`, {
+            credentials: 'include'
+        });
         if (!response.ok) throw new Error('Failed to fetch package');
         return response.json();
     }
 
-    async createPackage(data: Omit<Package, '_id'>, files?: any): Promise<any> {
+    async createPackage(data: Omit<Package, '_id'>): Promise<any> {
         // Create a deep copy of the data
         const packageData = JSON.parse(JSON.stringify(data));
 
@@ -101,7 +105,7 @@ class PackagesService {
         return response.json();
     }
 
-    async updatePackage(id: string, data: Partial<Package>, files?: any): Promise<any> {
+    async updatePackage(id: string, data: Partial<Package>): Promise<any> {
         const packageData = JSON.parse(JSON.stringify(data));
 
         const formData = new FormData();

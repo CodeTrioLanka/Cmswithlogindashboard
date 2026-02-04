@@ -29,7 +29,8 @@
 
 /* Small preview (for thumbnails, icons) */
 .image-preview-small {
-    width: 120px;
+    width: 100%;
+    max-width: 120px;
     height: 120px;
     border-radius: 8px;
     overflow: hidden;
@@ -51,7 +52,8 @@
 
 /* Medium preview (standard for most sections) */
 .image-preview-medium {
-    width: 250px;
+    width: 100%;
+    max-width: 250px;
     height: 180px;
     border-radius: 8px;
     overflow: hidden;
@@ -80,6 +82,13 @@
     overflow: hidden;
     border: 2px solid #e5e7eb;
     background-color: #f9fafb;
+}
+
+/* On very small screens, reduce height for large previews */
+@media (max-width: 640px) {
+    .image-preview-large {
+        height: 200px;
+    }
 }
 
 .dark .image-preview-large {
@@ -119,7 +128,8 @@
 
 /* Square preview (for profile images, logos) */
 .image-preview-square {
-    width: 200px;
+    width: 100%;
+    max-width: 200px;
     height: 200px;
     border-radius: 8px;
     overflow: hidden;
@@ -148,6 +158,12 @@
     overflow: hidden;
     border: 2px solid #e5e7eb;
     background-color: #000;
+}
+
+@media (max-width: 640px) {
+    .video-preview-container {
+        height: 200px;
+    }
 }
 
 .dark .video-preview-container {
@@ -216,4 +232,14 @@
 .dark .image-preview-square:hover {
     border-color: #10b981;
     box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.2);
+}
+
+/* Scrollbar utility */
+.scrollbar-hide::-webkit-scrollbar {
+    display: none;
+}
+
+.scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
 }

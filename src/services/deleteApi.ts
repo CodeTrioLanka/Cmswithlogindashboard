@@ -1,6 +1,6 @@
 /// <reference types="vite/client" />
 
-const BASE_URL = import.meta.env.VITE_BASE_URL || 'http://localhost:5000';
+const BASE_URL = import.meta.env.VITE_BASE_URL || 'https://nature-escape-web-back.vercel.app';
 
 export const deleteFromCloudinary = async (imageUrl: string): Promise<void> => {
   try {
@@ -10,6 +10,7 @@ export const deleteFromCloudinary = async (imageUrl: string): Promise<void> => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({ imageUrl }),
+      credentials: 'include'
     });
 
     if (!response.ok) {
