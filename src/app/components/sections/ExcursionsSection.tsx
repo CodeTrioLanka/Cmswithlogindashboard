@@ -337,7 +337,7 @@ export function ExcursionsSection({ data: _initialData, onChange: _onChange }: E
   return (
     <div className="space-y-8 pb-20">
       {/* Hero Section */}
-      <div className={`bg-white dark:bg-gray-800 rounded-xl shadow-sm border transition-colors ${isEditingHero ? 'border-blue-400 ring-1 ring-blue-400' : 'border-gray-200 dark:border-gray-700'} overflow-hidden`}>
+      <div className={`bg-white dark:bg-gray-800 rounded-xl shadow-sm border transition-colors ${isEditingHero ? 'border-green-400 ring-1 ring-green-400' : 'border-gray-200 dark:border-gray-700'} overflow-hidden`}>
         <div className="bg-gray-50 dark:bg-gray-700/50 px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             <LayoutTemplate className="w-5 h-5 text-green-600" />
@@ -424,7 +424,7 @@ export function ExcursionsSection({ data: _initialData, onChange: _onChange }: E
 
           <div className="space-y-3">
             <Label className="text-gray-700 dark:text-gray-300">Hero Background Image</Label>
-            <div className={`border-2 border-dashed rounded-xl p-4 transition-colors ${isEditingHero ? 'border-gray-300 hover:border-blue-400 bg-gray-50' : 'border-gray-200'}`}>
+            <div className={`border-2 border-dashed rounded-xl p-4 transition-colors ${isEditingHero ? 'border-gray-300 hover:border-green-400 bg-gray-50' : 'border-gray-200'}`}>
               {currentHero.heroImage ? (
                 <div className="space-y-3">
                   <div className="relative aspect-video w-full overflow-hidden rounded-lg shadow-sm">
@@ -481,8 +481,8 @@ export function ExcursionsSection({ data: _initialData, onChange: _onChange }: E
               <Compass className="w-5 h-5 text-green-600" />
               Excursions List
             </h3>
-            <span className="px-2.5 py-0.5 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 text-sm font-semibold">
-              {serverData.excursion.length}
+            <span className="px-2.5 py-0.5 rounded-full bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 text-sm font-semibold">
+              {serverData.excursion.length} items
             </span>
           </div>
 
@@ -500,8 +500,8 @@ export function ExcursionsSection({ data: _initialData, onChange: _onChange }: E
         <div className="grid grid-cols-1 gap-6">
           {/* Render New Activity Form if editingActivityIndex === -1 */}
           {editingActivityIndex === -1 && activityDraft && (
-            <div className="bg-white dark:bg-gray-800 rounded-xl border-2 border-blue-400 ring-2 ring-blue-100 dark:ring-blue-900/20 shadow-lg p-6 relative">
-              <div className="mb-4 flex items-center gap-2 text-blue-600 font-medium">
+            <div className="bg-white dark:bg-gray-800 rounded-xl border-2 border-green-400 ring-2 ring-green-100 dark:ring-green-900/20 shadow-lg p-6 relative">
+              <div className="mb-4 flex items-center gap-2 text-black-600 font-medium">
                 <Plus className="w-5 h-5" />
                 <span>Creating New Excursion</span>
               </div>
@@ -619,7 +619,7 @@ export function ExcursionsSection({ data: _initialData, onChange: _onChange }: E
               <div
                 key={index}
                 className={`group bg-white dark:bg-gray-800 rounded-xl border transition-all p-6 relative
-                  ${isEditingThis ? 'border-blue-400 ring-2 ring-blue-100 shadow-md' : 'border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md'}
+                  ${isEditingThis ? 'border-green-400 ring-2 ring-green-100 shadow-md' : 'border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md'}
                 `}
               >
                 <div className="flex flex-col md:flex-row gap-6">

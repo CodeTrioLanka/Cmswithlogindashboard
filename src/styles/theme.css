@@ -3,19 +3,26 @@
 :root {
   --font-size: 16px;
   --background: #ffffff;
-  --foreground: #1c1917; /* Stone 900 */
+  --foreground: #1c1917;
+  /* Stone 900 */
   --card: #ffffff;
   --card-foreground: #1c1917;
   --popover: #ffffff;
   --popover-foreground: #1c1917;
-  --primary: #15803d; /* Green 700 - Forest Green */
+  --primary: #15803d;
+  /* Green 700 - Forest Green */
   --primary-foreground: #ffffff;
-  --secondary: #dcfce7; /* Green 100 - Pale Leaf */
-  --secondary-foreground: #14532d; /* Green 900 */
-  --muted: #f0fdf4; /* Green 50 */
+  --secondary: #dcfce7;
+  /* Green 100 - Pale Leaf */
+  --secondary-foreground: #14532d;
+  /* Green 900 */
+  --muted: #f0fdf4;
+  /* Green 50 */
   --muted-foreground: #64748b;
-  --accent: #facc15; /* Yellow 400 - Flower Gold */
-  --accent-foreground: #422006; /* Brown */
+  --accent: #facc15;
+  /* Yellow 400 - Flower Gold */
+  --accent-foreground: #422006;
+  /* Brown */
   --destructive: #ef4444;
   --destructive-foreground: #ffffff;
   --border: #e2e8f0;
@@ -24,14 +31,16 @@
   --switch-background: #cbd5e1;
   --font-weight-medium: 500;
   --font-weight-normal: 400;
-  --ring: #15803d; /* Match primary */
+  --ring: #15803d;
+  /* Match primary */
   --chart-1: #15803d;
   --chart-2: #86efac;
   --chart-3: #facc15;
   --chart-4: #14532d;
   --chart-5: #a16207;
   --radius: 0.625rem;
-  --sidebar: #f0fdf4; /* Light Green sidebar */
+  --sidebar: #f0fdf4;
+  /* Light Green sidebar */
   --sidebar-foreground: #14532d;
   --sidebar-primary: #15803d;
   --sidebar-primary-foreground: #ffffff;
