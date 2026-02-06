@@ -1,13 +1,9 @@
 /// <reference types="vite/client" />
-
-const BASE_URL = import.meta.env.VITE_BASE_URL || 'https://nature-escape-web-back.vercel.app';
+import { apiClient } from '../utils/apiClient';
 
 export const fetchHomeData = async () => {
   try {
-    const response = await fetch(`${BASE_URL}/api/home`, {
-      credentials: 'include'
-    });
-    const data = await response.json();
+    const data = await apiClient.get<{ homes: any[] }>('/home');
     if (data.homes && data.homes.length > 0) {
       return data.homes[0];
     }
@@ -20,17 +16,7 @@ export const fetchHomeData = async () => {
 
 export const updateHomeData = async (id: string, formData: FormData) => {
   try {
-    const response = await fetch(`${BASE_URL}/api/home/${id}`, {
-      method: 'PUT',
-      body: formData,
-      credentials: 'include'
-    });
-
-    if (!response.ok) {
-      throw new Error('Failed to update home data');
-    }
-
-    return await response.json();
+    return await apiClient.put(`/home/${id}`, formData);
   } catch (error) {
     console.error('Error updating home data:', error);
     throw error;

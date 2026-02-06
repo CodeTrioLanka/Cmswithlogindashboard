@@ -70,6 +70,14 @@ export function Login({ onLogin }: LoginProps) {
       // Save user data
       localStorage.setItem("user", JSON.stringify(user));
 
+      // Save tokens if they exist (handling the Vercel cookie issue)
+      if (data.accessToken) {
+        localStorage.setItem("accessToken", data.accessToken);
+      }
+      if (data.refreshToken) {
+        localStorage.setItem("refreshToken", data.refreshToken);
+      }
+
       // Pass to parent
       onLogin(user);
 
