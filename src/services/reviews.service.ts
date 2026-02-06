@@ -1,5 +1,4 @@
-const BASE_URL = import.meta.env.VITE_BASE_URL || 'https://nature-escape-web-back.vercel.app';
-const API_BASE_URL = `${BASE_URL}/api`;
+import { apiClient } from '../utils/apiClient';
 
 export interface Review {
     _id?: string;
@@ -89,12 +88,6 @@ export interface ReviewFilters {
 }
 
 class ReviewsService {
-    private getAuthHeaders() {
-        return {
-            'Content-Type': 'application/json'
-        };
-    }
-
     /**
      * Get all reviews with filters (Admin)
      */
@@ -108,35 +101,16 @@ class ReviewsService {
         if (filters?.limit) params.append('limit', String(filters.limit));
 
         const queryString = params.toString();
-        const url = `${API_BASE_URL}/reviews/all${queryString ? `?${queryString}` : ''}`;
+        const url = `/reviews/all${queryString ? `?${queryString}` : ''}`;
 
-        const response = await fetch(url, {
-            headers: this.getAuthHeaders(),
-            credentials: 'include'
-        });
-
-        if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.message || 'Failed to fetch reviews');
-        }
-
-        return response.json();
+        return apiClient.get<ReviewsResponse>(url);
     }
 
     /**
      * Get review statistics (Public)
      */
     async getReviewStats(): Promise<ReviewStatsResponse> {
-        const response = await fetch(`${API_BASE_URL}/reviews/stats`, {
-            credentials: 'include'
-        });
-
-        if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.message || 'Failed to fetch statistics');
-        }
-
-        return response.json();
+        return apiClient.get<ReviewStatsResponse>('/reviews/stats');
     }
 
     /**
@@ -150,19 +124,7 @@ class ReviewsService {
         avatarUrl?: string;
         reviewDate?: string;
     }): Promise<SingleReviewResponse> {
-        const response = await fetch(`${API_BASE_URL}/reviews/admin`, {
-            method: 'POST',
-            headers: this.getAuthHeaders(),
-            body: JSON.stringify(reviewData),
-            credentials: 'include'
-        });
-
-        if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.message || 'Failed to add review');
-        }
-
-        return response.json();
+        return apiClient.post<SingleReviewResponse>('/reviews/admin', reviewData);
     }
 
     /**
@@ -176,91 +138,35 @@ class ReviewsService {
         avatarUrl?: string;
         isVisible?: boolean;
     }): Promise<SingleReviewResponse> {
-        const response = await fetch(`${API_BASE_URL}/reviews/${id}`, {
-            method: 'PUT',
-            headers: this.getAuthHeaders(),
-            body: JSON.stringify(reviewData),
-            credentials: 'include'
-        });
-
-        if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.message || 'Failed to update review');
-        }
-
-        return response.json();
+        return apiClient.put<SingleReviewResponse>(`/reviews/${id}`, reviewData);
     }
 
     /**
      * Delete a review (Admin)
      */
     async deleteReview(id: string): Promise<DeleteResponse> {
-        const response = await fetch(`${API_BASE_URL}/reviews/${id}`, {
-            method: 'DELETE',
-            headers: this.getAuthHeaders(),
-            credentials: 'include'
-        });
-
-        if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.message || 'Failed to delete review');
-        }
-
-        return response.json();
+        return apiClient.delete<DeleteResponse>(`/reviews/${id}`);
     }
 
     /**
      * Approve a pending review (Admin)
      */
     async approveReview(id: string): Promise<SingleReviewResponse> {
-        const response = await fetch(`${API_BASE_URL}/reviews/${id}/approve`, {
-            method: 'PATCH',
-            headers: this.getAuthHeaders(),
-            credentials: 'include'
-        });
-
-        if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.message || 'Failed to approve review');
-        }
-
-        return response.json();
+        return apiClient.patch<SingleReviewResponse>(`/reviews/${id}/approve`);
     }
 
     /**
      * Toggle review visibility (Admin)
      */
     async toggleVisibility(id: string, isVisible?: boolean): Promise<SingleReviewResponse> {
-        const response = await fetch(`${API_BASE_URL}/reviews/${id}/visibility`, {
-            method: 'PATCH',
-            headers: this.getAuthHeaders(),
-            body: JSON.stringify({ isVisible }),
-            credentials: 'include'
-        });
-
-        if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.message || 'Failed to toggle visibility');
-        }
-
-        return response.json();
+        return apiClient.patch<SingleReviewResponse>(`/reviews/${id}/visibility`, { isVisible });
     }
 
     /**
      * Sync Google reviews (Admin)
      */
     async syncGoogleReviews(): Promise<GoogleSyncResponse> {
-        const response = await fetch(`${API_BASE_URL}/reviews/google/sync`, {
-            headers: this.getAuthHeaders(),
-            credentials: 'include'
-        });
-
-        if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.message || 'Failed to sync Google reviews');
-        }
-
-        return response.json();
+        return apiClient.get<GoogleSyncResponse>('/reviews/google/sync');
     }
 }
 

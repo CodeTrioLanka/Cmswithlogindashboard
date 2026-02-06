@@ -1,5 +1,4 @@
-const BASE_URL = import.meta.env.VITE_BASE_URL || 'https://nature-escape-web-back.vercel.app';
-const API_BASE_URL = `${BASE_URL}/api`;
+import { apiClient } from '../utils/apiClient';
 
 export interface TourCategory {
     _id?: string;
@@ -16,35 +15,17 @@ export interface TourCategory {
 
 class TourCategoriesService {
     async getTourCategories(): Promise<{ tours: TourCategory[] }> {
-        const response = await fetch(`${API_BASE_URL}/tours`, {
-            credentials: 'include'
-        });
-        if (!response.ok) throw new Error('Failed to fetch tour categories');
-        return response.json();
+        return apiClient.get<{ tours: TourCategory[] }>('/tours');
     }
 
     async getTourCategoryById(id: string): Promise<{ tour: TourCategory }> {
-        const response = await fetch(`${API_BASE_URL}/tours/${id}`, {
-            credentials: 'include'
-        });
-        if (!response.ok) throw new Error('Failed to fetch tour category');
-        return response.json();
+        return apiClient.get<{ tour: TourCategory }>(`/tours/${id}`);
     }
 
     async createTourCategory(data: Omit<TourCategory, '_id' | 'createdAt' | 'updatedAt'>, images: File[]): Promise<{ tour: TourCategory; message: string }> {
         // If images are already uploaded (URLs in data.images), send JSON
         if (images.length === 0 && data.images && data.images.length > 0) {
-            const response = await fetch(`${API_BASE_URL}/tours`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(data),
-                credentials: 'include'
-            });
-
-            if (!response.ok) throw new Error('Failed to create tour category');
-            return response.json();
+            return apiClient.post<{ tour: TourCategory; message: string }>('/tours', data);
         }
 
         // Otherwise send FormData with files
@@ -63,30 +44,13 @@ class TourCategoriesService {
             formData.append('images', image);
         });
 
-        const response = await fetch(`${API_BASE_URL}/tours`, {
-            method: 'POST',
-            body: formData,
-            credentials: 'include'
-        });
-
-        if (!response.ok) throw new Error('Failed to create tour category');
-        return response.json();
+        return apiClient.post<{ tour: TourCategory; message: string }>('/tours', formData);
     }
 
     async updateTourCategory(id: string, data: Partial<TourCategory>, images?: File[]): Promise<{ tour: TourCategory; message: string }> {
         // If no new files and images are URLs in data, send JSON
         if ((!images || images.length === 0) && data.images) {
-            const response = await fetch(`${API_BASE_URL}/tours/${id}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(data),
-                credentials: 'include'
-            });
-
-            if (!response.ok) throw new Error('Failed to update tour category');
-            return response.json();
+            return apiClient.put<{ tour: TourCategory; message: string }>(`/tours/${id}`, data);
         }
 
         // Otherwise send FormData
@@ -107,24 +71,11 @@ class TourCategoriesService {
             });
         }
 
-        const response = await fetch(`${API_BASE_URL}/tours/${id}`, {
-            method: 'PUT',
-            body: formData,
-            credentials: 'include'
-        });
-
-        if (!response.ok) throw new Error('Failed to update tour category');
-        return response.json();
+        return apiClient.put<{ tour: TourCategory; message: string }>(`/tours/${id}`, formData);
     }
 
     async deleteTourCategory(id: string): Promise<{ message: string }> {
-        const response = await fetch(`${API_BASE_URL}/tours/${id}`, {
-            method: 'DELETE',
-            credentials: 'include'
-        });
-
-        if (!response.ok) throw new Error('Failed to delete tour category');
-        return response.json();
+        return apiClient.delete<{ message: string }>(`/tours/${id}`);
     }
 }
 
