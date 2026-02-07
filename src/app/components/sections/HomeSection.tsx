@@ -147,15 +147,24 @@ export function HomeSection() {
         gallery: homeData.gallery // Include gallery array
       };
 
+      // Get the access token from localStorage
+      const token = localStorage.getItem('accessToken');
+      const headers: HeadersInit = {
+        'Content-Type': 'application/json',
+      };
+
+      // Add Authorization header if token exists
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
       let result;
 
       if (homeData._id) {
         // For updates, send the data directly since images are already uploaded to Cloudinary
         const response = await fetch(`${BASE_URL}/api/home/${homeData._id}`, {
           method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          headers,
           body: JSON.stringify(dataToSend),
           credentials: 'include'
         });
@@ -166,9 +175,7 @@ export function HomeSection() {
         // Create new data
         const response = await fetch(`${BASE_URL}/api/home`, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          headers,
           body: JSON.stringify(dataToSend),
           credentials: 'include'
         });
