@@ -78,11 +78,18 @@ export function ContactSection() {
   const handleSave = async () => {
     setLoading(true);
     try {
+      const token = localStorage.getItem('accessToken');
+      const headers: HeadersInit = {
+        'Content-Type': 'application/json',
+      };
+
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
       const response = await fetch(`${BASE_URL}/api/contactus`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers,
         body: JSON.stringify(contactData),
         credentials: 'include'
       });
