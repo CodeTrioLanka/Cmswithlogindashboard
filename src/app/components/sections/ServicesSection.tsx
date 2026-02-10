@@ -29,7 +29,12 @@ interface ServiceHeroData {
 // ============ UNIFIED API ============
 const fetchServicePageData = async (): Promise<{ hero: ServiceHeroData | null; services: ServiceData[] }> => {
   try {
+    const token = localStorage.getItem('accessToken');
+    const headers: HeadersInit = {};
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
     const response = await fetch(`${BASE_URL}/api/service-page`, {
+      headers,
       credentials: 'include'
     });
     if (!response.ok) throw new Error('Failed to fetch service page data');
@@ -47,6 +52,10 @@ const fetchServicePageData = async (): Promise<{ hero: ServiceHeroData | null; s
 // ============ SERVICE HERO API ============
 const saveServiceHero = async (heroData: Partial<ServiceHeroData>, imageFile?: File): Promise<ServiceHeroData> => {
   try {
+    const token = localStorage.getItem('accessToken');
+    const headers: HeadersInit = {};
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
     const formData = new FormData();
     formData.append('data', JSON.stringify(heroData));
     if (imageFile) {
@@ -54,6 +63,7 @@ const saveServiceHero = async (heroData: Partial<ServiceHeroData>, imageFile?: F
     }
     const response = await fetch(`${BASE_URL}/api/service-page/hero`, {
       method: 'POST',
+      headers,
       body: formData,
       credentials: 'include'
     });
@@ -69,6 +79,10 @@ const saveServiceHero = async (heroData: Partial<ServiceHeroData>, imageFile?: F
 // ============ SERVICES API ============
 const addServiceApi = async (serviceData: Omit<ServiceData, '_id'>, imageFile?: File): Promise<ServiceData> => {
   try {
+    const token = localStorage.getItem('accessToken');
+    const headers: HeadersInit = {};
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
     const formData = new FormData();
     formData.append('data', JSON.stringify(serviceData));
     if (imageFile) {
@@ -76,6 +90,7 @@ const addServiceApi = async (serviceData: Omit<ServiceData, '_id'>, imageFile?: 
     }
     const response = await fetch(`${BASE_URL}/api/service-page/services`, {
       method: 'POST',
+      headers,
       body: formData,
       credentials: 'include'
     });
@@ -90,6 +105,10 @@ const addServiceApi = async (serviceData: Omit<ServiceData, '_id'>, imageFile?: 
 
 const updateServiceApi = async (id: string, serviceData: Partial<ServiceData>, imageFile?: File): Promise<ServiceData> => {
   try {
+    const token = localStorage.getItem('accessToken');
+    const headers: HeadersInit = {};
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
     const formData = new FormData();
     formData.append('data', JSON.stringify(serviceData));
     if (imageFile) {
@@ -97,13 +116,14 @@ const updateServiceApi = async (id: string, serviceData: Partial<ServiceData>, i
     }
     const response = await fetch(`${BASE_URL}/api/service-page/services/${id}`, {
       method: 'PUT',
+      headers,
       body: formData,
       credentials: 'include'
     });
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
       console.error('Server Error Details:', errorData);
-      throw new Error(errorData.error || 'Failed to update service');
+      throw new Error(errorData.error || errorData.message || 'Failed to update service');
     }
     const data = await response.json();
     return data.service;
@@ -115,8 +135,13 @@ const updateServiceApi = async (id: string, serviceData: Partial<ServiceData>, i
 
 const deleteServiceApi = async (id: string): Promise<void> => {
   try {
+    const token = localStorage.getItem('accessToken');
+    const headers: HeadersInit = {};
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
     const response = await fetch(`${BASE_URL}/api/service-page/services/${id}`, {
       method: 'DELETE',
+      headers,
       credentials: 'include'
     });
     if (!response.ok) throw new Error('Failed to delete service');
