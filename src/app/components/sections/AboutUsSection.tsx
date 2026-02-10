@@ -3,6 +3,8 @@ import { Info, TrendingUp, Calendar, Heart, Users, Plus, Trash2, Save, Loader2, 
 import { toast } from 'sonner';
 import {
   fetchAboutUsData,
+  createAboutUsData,
+  updateAboutUsData,
   AboutUsData,
   AboutUsStats,
   Milestone,
@@ -11,8 +13,6 @@ import {
 } from '../../../services/aboutUsApi';
 import { ImageUploadInput } from '../ui/ImageUploadInput';
 import { deleteFromCloudinary } from '../../../services/deleteApi';
-
-const BASE_URL = import.meta.env.VITE_BASE_URL || 'https://nature-escape-web-back.vercel.app';
 
 export function AboutUsSection() {
   const [aboutUsData, setAboutUsData] = useState<AboutUsData | null>(null);
@@ -143,37 +143,17 @@ export function AboutUsSection() {
         }
       });
 
-      let response;
-      let result;
-
+      let newData: AboutUsData;
       if (aboutUsData?._id) {
-        // Update existing data
-        response = await fetch(`${BASE_URL}/api/aboutus/${aboutUsData._id}`, {
-          method: 'PUT',
-          body: formData,
-          credentials: 'include'
-        });
+        newData = await updateAboutUsData(aboutUsData._id, formData);
       } else {
-        // Create new data
-        response = await fetch(`${BASE_URL}/api/aboutus/setData`, {
-          method: 'POST',
-          body: formData,
-          credentials: 'include'
-        });
+        newData = await createAboutUsData(formData);
       }
-
-      result = await response.json();
-
-      if (!response.ok) {
-        throw new Error(result.message || 'Failed to save about us data');
-      }
-
-      const newData = result.data;
       setAboutUsData(newData);
       setOriginalData(newData);
 
       setIsEditing(false);
-      toast.success(result.message || (aboutUsData?._id ? 'Updated successfully!' : 'Created successfully!'));
+      toast.success(aboutUsData?._id ? 'Updated successfully!' : 'Created successfully!');
 
     } catch (err) {
       console.error(err);

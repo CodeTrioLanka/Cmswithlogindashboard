@@ -79,8 +79,16 @@ export const fetchAboutUsData = async (): Promise<AboutUsData | null> => {
 
 export const createAboutUsData = async (formData: FormData): Promise<AboutUsData> => {
     try {
+        const token = localStorage.getItem('accessToken');
+        const headers: HeadersInit = {};
+
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+        }
+
         const response = await fetch(`${BASE_URL}/api/aboutus/setData`, {
             method: 'POST',
+            headers,
             body: formData,
             credentials: 'include'
         });
@@ -99,8 +107,16 @@ export const createAboutUsData = async (formData: FormData): Promise<AboutUsData
 
 export const updateAboutUsData = async (id: string, formData: FormData): Promise<AboutUsData> => {
     try {
+        const token = localStorage.getItem('accessToken');
+        const headers: HeadersInit = {};
+
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+        }
+
         const response = await fetch(`${BASE_URL}/api/aboutus/${id}`, {
             method: 'PUT',
+            headers,
             body: formData,
             credentials: 'include'
         });
@@ -119,8 +135,16 @@ export const updateAboutUsData = async (id: string, formData: FormData): Promise
 
 export const deleteAboutUsData = async (id: string): Promise<void> => {
     try {
+        const token = localStorage.getItem('accessToken');
+        const headers: HeadersInit = {};
+
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+        }
+
         const response = await fetch(`${BASE_URL}/api/aboutus/${id}`, {
             method: 'DELETE',
+            headers,
             credentials: 'include'
         });
 
