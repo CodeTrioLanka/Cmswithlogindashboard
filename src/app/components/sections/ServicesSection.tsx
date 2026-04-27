@@ -8,7 +8,7 @@ import { Label } from '../ui/label';
 import { Textarea } from '../ui/textarea';
 import { toast } from 'sonner';
 
-const BASE_URL = import.meta.env.VITE_BASE_URL || 'https://nature-escape-web-back.vercel.app';
+const BASE_URL = import.meta.env.VITE_BASE_URL;
 
 // ============ INTERFACES ============
 interface ServiceData {
