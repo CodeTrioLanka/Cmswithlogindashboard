@@ -1,6 +1,6 @@
 import { ThingsToDoData } from "../app/App";
 
-const BASE_URL = import.meta.env.VITE_BASE_URL || 'https://nature-escape-web-back.vercel.app';
+const BASE_URL = import.meta.env.VITE_BASE_URL;
 
 export const getThingsToDo = async (): Promise<ThingsToDoData | null> => {
     try {

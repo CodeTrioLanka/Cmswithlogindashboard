@@ -1,6 +1,6 @@
 
 
-const API_BASE_URL = (import.meta.env.VITE_BASE_URL || 'https://nature-escape-web-back.vercel.app') + '/api';
+const API_BASE_URL = (import.meta.env.VITE_BASE_URL) + '/api';
 
 interface RequestOptions extends RequestInit {
     data?: any;
