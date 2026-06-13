@@ -12,8 +12,8 @@ import { Textarea } from '../ui/textarea';
 import type { ExcursionData, ExcursionItem, ExcursionHero } from '../../App';
 
 interface ExcursionsSectionProps {
-  data: ExcursionData | null;
-  onChange: (data: ExcursionData) => void;
+  data?: ExcursionData | null;
+  onChange?: (data: ExcursionData) => void;
 }
 
 const INITIAL_HERO: ExcursionHero = {
