@@ -63,7 +63,7 @@ export function Dashboard({ onLogout, user }: DashboardProps) {
       case 'packages':
         return <PackagesSection />;
       case 'excursions':
-        return <ExcursionsSection />;
+        return <ExcursionsSection data={null} onChange={() => { }} />;
       case 'things':
         return <ThingsToDoSection data={null} onChange={() => { }} />;
       case 'services':
