@@ -1,0 +1,70 @@
+name: Deploy to NameCheap
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 16
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build project
+        run: npm run build  
+
+      - name: Clean server (keep .htaccess and maintainPage)
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.NAMECHEAP_HOST }}
+          username: ${{ secrets.NAMECHEAP_USERNAME }}
+          key: ${{ secrets.NAMECHEAP_SSH_KEY }}
+          port: ${{ secrets.NAMECHEAP_PORT }}
+          passphrase: ${{ secrets.NAMECHEAP_SSH_PASSPHRASE }}
+          script: |
+            set -e
+            cd /home/${{ secrets.NAMECHEAP_USERNAME }}/cms.slnatureescape.com
+            echo "Cleaning deployment directory..."
+            find . -mindepth 1 \
+              ! -name ".htaccess" \
+              ! -name "maintainPage" \
+              -exec rm -rf {} +
+
+            echo "Cleanup completed."
+
+      - name: Upload dist files
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.NAMECHEAP_HOST }}
+          username: ${{ secrets.NAMECHEAP_USERNAME }}
+          key: ${{ secrets.NAMECHEAP_SSH_KEY }}
+          port: ${{ secrets.NAMECHEAP_PORT }}
+          passphrase: ${{ secrets.NAMECHEAP_SSH_PASSPHRASE }}
+          source: "dist/*"
+          target: "/home/${{ secrets.NAMECHEAP_USERNAME }}/cms.slnatureescape.com"
+          strip_components: 1
+
+      - name: Verify deployment
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.NAMECHEAP_HOST }}
+          username: ${{ secrets.NAMECHEAP_USERNAME }}
+          key: ${{ secrets.NAMECHEAP_SSH_KEY }}
+          port: ${{ secrets.NAMECHEAP_PORT }}
+          passphrase: ${{ secrets.NAMECHEAP_SSH_PASSPHRASE }}
+          script: |
+            cd /home/${{ secrets.NAMECHEAP_USERNAME }}/pcms.slnatureescape.com
+
+            echo "Deployment completed."
+            ls -la
